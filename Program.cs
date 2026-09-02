@@ -1,43 +1,29 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using MiProyectoAPI.Data;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var builder = WebApplication.CreateBuilder(args);  // Crear el constructor de la API. Es el que va a armar todo.
 
+// Agrega servicios al contenedor.
+// Aprende más acerca de configurar OpenAPI en https://aka.ms/aspnet/openapi
+// "(builder.Services)" significa que necesitas herramientas como Swagger,
+// controladores y Bases de datos.
+builder.Services.AddEndpointsApiExplorer();  // Swagger puede descubrir que endpoints posees.
+builder.Services.AddSwaggerGen();   // Este método abre Swagger para ejecutar los endpoints de la API.
+builder.Services.AddControllers();  // Este método 
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
+
+// Construís estos servicios con todo lo que se pidió arriba.  Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Para ver Swagger mientras codeas en este entorno.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();   // Obliga a que todo entre por https.
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+app.MapControllers();    // Activa los paths (rutas) de los controladores API.
+app.Run();          // Ponemos a arrancar la API.
+//Sin estos dos últimos métodos, la API compila pero no hace nada.

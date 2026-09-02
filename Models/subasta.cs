@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MiProyectoApi.Models;
+namespace MiProyectoAPI.Models;
 
 public class Subasta
 {

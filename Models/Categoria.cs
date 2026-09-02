@@ -1,4 +1,4 @@
-namespace MiProyectoApi.Models;
+namespace MiProyectoAPI.Models;
 
 public class Categoria
 {
