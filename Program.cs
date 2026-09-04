@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; 
 using MiProyectoAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);  // Crear el constructor de la API. Es el que va a armar todo.
@@ -25,5 +25,15 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();   // Obliga a que todo entre por https.
 
 app.MapControllers();    // Activa los paths (rutas) de los controladores API.
+
+using (var scope = app.Services.CreateScope())
+{
+    var Services = scope.ServiceProvider;
+    var contexto = Services.GetRequiredService<AppDbContext>();
+    contexto.Database.Migrate();     // Crea la base de datos si no existe.
+    SeedData.IniciarDatosSemilla(contexto);    //Llena las cuatro categorías, usuarios y billeteras.
+}
+
 app.Run();          // Ponemos a arrancar la API.
 //Sin estos dos últimos métodos, la API compila pero no hace nada.
+
