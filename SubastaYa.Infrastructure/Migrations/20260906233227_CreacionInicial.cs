@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MiProyectoAPI.Migrations
+namespace SubastaYa.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class CreacionInicial : Migration

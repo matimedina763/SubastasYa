@@ -1,4 +1,4 @@
-namespace MiProyectoAPI.Models;
+namespace SubastaYa.Domain.Entities;
 
 public class Puja
 {

@@ -1,5 +1,5 @@
-using MiProyectoAPI.Models;
-namespace MiProyectoAPI.Data;
+using SubastaYa.Domain.Entities;
+namespace SubastaYa.Infrastructure.Data;
 
 public static class SeedData
 {

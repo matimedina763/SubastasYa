@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MiProyectoAPI.Data;
+using SubastaYa.Infrastructure.Data;
 
 namespace MiProyectoAPI.Controllers
 {

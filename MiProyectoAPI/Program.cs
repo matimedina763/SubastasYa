@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore; 
-using MiProyectoAPI.Data;
-
+using Microsoft.EntityFrameworkCore;
+using SubastaYa.Infrastructure.Data;
 var builder = WebApplication.CreateBuilder(args);  // Crear el constructor de la API. Es el que va a armar todo.
 
 // Agrega servicios al contenedor.
