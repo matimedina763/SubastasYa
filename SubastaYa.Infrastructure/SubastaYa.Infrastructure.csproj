@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SubastaYa.domain\SubastaYa.Domain.csproj" />
+    <ProjectReference Include="..\SubastaYa.Application\SubastaYa.Application.csproj" />
   </ItemGroup>
 
 </Project>

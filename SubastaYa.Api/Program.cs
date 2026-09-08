@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; //En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
 using SubastaYa.Infrastructure.Data;
 var builder = WebApplication.CreateBuilder(args);  // Crear el constructor de la API. Es el que va a armar todo.
 

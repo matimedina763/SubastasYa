@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;  //En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
 using SubastaYa.Infrastructure.Data;
 
-namespace MiProyectoAPI.Controllers
+namespace SubastaYa.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
