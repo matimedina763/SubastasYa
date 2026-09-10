@@ -5,7 +5,7 @@ using SubastaYa.Infrastructure.Data;
 namespace SubastaYa.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] 
     public class CategoriasController : ControllerBase
     {
         private readonly AppDbContext _context = null!;
@@ -15,7 +15,7 @@ namespace SubastaYa.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Get()
+        public async Task<IActionResult> Get()
         {
             var Categorias = await _context.Categorias.ToListAsync();
             return Ok (Categorias);
