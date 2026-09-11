@@ -6,7 +6,7 @@ public class Subasta
 {
     public Guid Id  { get; set; }
 
-    public Guid VendedorId { get; set; }
+    public int VendedorId { get; set; }
     public Usuario Vendedor { get; set; } = null!;
 
     public int CategoriaId { get; set; }
