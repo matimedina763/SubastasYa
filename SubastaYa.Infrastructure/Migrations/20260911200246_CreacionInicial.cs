@@ -68,7 +68,7 @@ namespace SubastaYa.Infrastructure.Migrations
                     UsuarioId = table.Column<int>(type: "INTEGER", nullable: false),
                     SaldoTotal = table.Column<decimal>(type: "TEXT", nullable: false),
                     SaldoRetenido = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Version = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: false)
+                    Version = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,13 +91,13 @@ namespace SubastaYa.Infrastructure.Migrations
                     CategoriaId = table.Column<int>(type: "INTEGER", nullable: false),
                     Titulo = table.Column<string>(type: "TEXT", nullable: false),
                     Descripcion = table.Column<string>(type: "TEXT", nullable: false),
-                    Url_imagen = table.Column<string>(type: "TEXT", nullable: false),
-                    precio_base = table.Column<decimal>(type: "TEXT", nullable: false),
-                    incremento_minimo = table.Column<decimal>(type: "TEXT", nullable: false),
-                    fecha_inicio = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    fecha_fin = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    estado = table.Column<string>(type: "TEXT", nullable: false),
-                    Version = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: false)
+                    UrlImagen = table.Column<string>(type: "TEXT", nullable: false),
+                    PrecioBase = table.Column<decimal>(type: "TEXT", nullable: false),
+                    IncrementoMinimo = table.Column<decimal>(type: "TEXT", nullable: false),
+                    FechaInicio = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Estado = table.Column<string>(type: "TEXT", nullable: false),
+                    Version = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

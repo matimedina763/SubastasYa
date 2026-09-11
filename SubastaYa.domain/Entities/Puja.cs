@@ -4,7 +4,7 @@ public class Puja
 {
     public int Id { get; set; }
 
-    public Guid SubastaId { get; set; }
+    public int SubastaId { get; set; }
     public Subasta Subasta { get; set; } = null!;
 
     public int CompradorId { get; set; }

@@ -13,8 +13,8 @@ public class Billetera
     public decimal SaldoRetenido { get; set; }
     public decimal SaldoDisponible => SaldoTotal - SaldoRetenido;
 
-    [Timestamp]
-    public byte[] Version { get; set; } = null!;
+    [ConcurrencyCheck]
+    public int Version { get; set; }
 
     public ICollection<TransaccionLedger> Movimientos { get; set; } = new List<TransaccionLedger>();
 }

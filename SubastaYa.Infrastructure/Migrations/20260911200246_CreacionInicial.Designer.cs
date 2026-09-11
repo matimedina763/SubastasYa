@@ -11,7 +11,7 @@ using SubastaYa.Infrastructure.Data;
 namespace SubastaYa.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260906233227_CreacionInicial")]
+    [Migration("20260911200246_CreacionInicial")]
     partial class CreacionInicial
     {
         /// <inheritdoc />
@@ -67,11 +67,9 @@ namespace SubastaYa.Infrastructure.Migrations
                     b.Property<int>("UsuarioId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("Version")
+                    b.Property<int>("Version")
                         .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("BLOB");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -140,38 +138,36 @@ namespace SubastaYa.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FechaFin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("IncrementoMinimo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PrecioBase")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Url_imagen")
+                    b.Property<string>("UrlImagen")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("VendedorId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("Version")
+                    b.Property<int>("Version")
                         .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("BLOB");
-
-                    b.Property<string>("estado")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("fecha_fin")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("fecha_inicio")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("incremento_minimo")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("precio_base")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

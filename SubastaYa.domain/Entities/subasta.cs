@@ -4,25 +4,31 @@ namespace SubastaYa.Domain.Entities;
 
 public class Subasta
 {
-    public Guid Id  { get; set; }
-
+    public int Id { get; set; }
     public int VendedorId { get; set; }
     public Usuario Vendedor { get; set; } = null!;
-
     public int CategoriaId { get; set; }
-    public Categoria Categoria {get; set;} = null!;
-
+    public Categoria Categoria { get; set; } = null!;
     public string Titulo { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
-    public string Url_imagen {get; set;} = string.Empty;
-    public decimal precio_base {get; set;}
-    public decimal incremento_minimo {get; set;}
-    public DateTime fecha_inicio {get; set;}
-    public DateTime fecha_fin {get; set;}
-    public string estado {get; set;} = "PROGRAMADA";
+    public string UrlImagen { get; set; } = string.Empty;
+    public decimal PrecioBase { get; set; }
+    public decimal IncrementoMinimo { get; set; }
+    public DateTime FechaInicio { get; set; }
+    public DateTime FechaFin { get; set; }
+    public string Estado { get; set; } = "PROGRAMADA";
 
-    [Timestamp]
-    public byte[] Version { get; set; } = null!;
+    [ConcurrencyCheck]
+    public int Version { get; set; }
+
     public ICollection<Puja> Pujas { get; set; } = new List<Puja>();
-    
+
+    public decimal OfertaActual() => Pujas.Any() ? Pujas.Max(p => p.Monto) : PrecioBase;
+
+    public bool EsPujaValida(decimal montoOfertado) => montoOfertado >= OfertaActual() + IncrementoMinimo;
+
+    public bool EstaEnVentanaAntiSniping(DateTime ahora)
+        => (FechaFin - ahora).TotalSeconds <= 60 && (FechaFin - ahora).TotalSeconds > 0;
+
+    public void ExtenderCierre() => FechaFin = FechaFin.AddMinutes(2);
 }

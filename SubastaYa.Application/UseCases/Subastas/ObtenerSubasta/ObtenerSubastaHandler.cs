@@ -1,10 +1,9 @@
-using MediatR;
 using SubastaYa.Application.DTOs;
 using SubastaYa.Application.Interfaces.Persistence;
-using SubastaYa.Domain.Entities;
 
 namespace SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
-public class ObtenerSubastaHandler : IRequestHandler<ObtenerSubastaQuery, SubastaDto>
+
+public class ObtenerSubastaHandler
 {
     private readonly ISubastaRepository _subastaRepository;
 
@@ -13,7 +12,7 @@ public class ObtenerSubastaHandler : IRequestHandler<ObtenerSubastaQuery, Subast
         _subastaRepository = subastaRepository;
     }
 
-    public async Task<SubastaDto> Handle(ObtenerSubastaQuery request, CancellationToken cancellationToken)
+    public async Task<SubastaDto> Handle(ObtenerSubastaQuery request)
     {
         var subasta = await _subastaRepository.ObtenerSubastaPorIdAsync(request.Id);
 
@@ -27,13 +26,10 @@ public class ObtenerSubastaHandler : IRequestHandler<ObtenerSubastaQuery, Subast
             Id = subasta.Id,
             Titulo = subasta.Titulo,
             Descripcion = subasta.Descripcion,
-            PrecioInicial = subasta.precio_base,
-            FechaInicio = subasta.fecha_inicio,
-            FechaFin = subasta.fecha_fin,
-            Activa = subasta.estado == "ACTIVA"
+            PrecioInicial = subasta.PrecioBase,
+            FechaInicio = subasta.FechaInicio,
+            FechaFin = subasta.FechaFin,
+            Activa = subasta.Estado == "ACTIVA"
         };
     }
 }
-
-
-                                              

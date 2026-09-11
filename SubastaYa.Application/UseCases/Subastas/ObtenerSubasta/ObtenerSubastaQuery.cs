@@ -1,15 +1,14 @@
-using MediatR; 
 using SubastaYa.Application.DTOs;  
 
 namespace SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
-public class ObtenerSubastaQuery : IRequest<SubastaDto>   
+public class ObtenerSubastaQuery    
 {
-    public Guid Id { get; set; }
-    public ObtenerSubastaQuery(Guid id)
+    public int Id { get; set; }
+    public ObtenerSubastaQuery(int id)
     {
         Id = id;
     }
-        
+
 }
     
 
