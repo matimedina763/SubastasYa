@@ -1,6 +1,6 @@
 using SubastaYa.Domain.Entities;
 namespace SubastaYa.Infrastructure.Data;
-// Falta una referencia a EntityFrameworkCore - ESTAMOS EN LA CAPA DE INFRAESTRUCTURA JUSTAMENTE.
+
 public static class SeedData
 {
     public static void IniciarDatosSemilla(AppDbContext context)
