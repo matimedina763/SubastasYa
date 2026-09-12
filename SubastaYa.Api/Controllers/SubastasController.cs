@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
+using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 
 namespace SubastaYa.Api.Controllers
 {
@@ -8,10 +9,14 @@ namespace SubastaYa.Api.Controllers
     public class SubastasController : ControllerBase
     {
         private readonly ObtenerSubastaHandler _obtenerSubastaHandler;
+        private readonly RegistrarPujaCommandHandler _registrarPujaHandler;
 
-        public SubastasController(ObtenerSubastaHandler obtenerSubastaHandler)
+        public SubastasController(
+            ObtenerSubastaHandler obtenerSubastaHandler,
+            RegistrarPujaCommandHandler registrarPujaHandler)
         {
             _obtenerSubastaHandler = obtenerSubastaHandler;
+            _registrarPujaHandler = registrarPujaHandler;
         }
 
         [HttpGet("{id}")]
@@ -19,6 +24,14 @@ namespace SubastaYa.Api.Controllers
         {
             var resultado = await _obtenerSubastaHandler.Handle(new ObtenerSubastaQuery(id));
             return Ok(resultado);
+        }
+
+        [HttpPost("{id}/pujas")]
+        public async Task<IActionResult> RegistrarPuja(int id, [FromBody] RegistrarPujaRequest request)
+        {
+            var command = new RegistrarPujaCommand(id, request.CompradorId, request.Monto);
+            await _registrarPujaHandler.Handle(command);
+            return Ok();
         }
     }
 }

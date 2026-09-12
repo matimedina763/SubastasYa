@@ -1,19 +1,26 @@
 using Microsoft.EntityFrameworkCore;                // En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
-using SubastaYa.Infrastructure.Data;
 using SubastaYa.Application.Interfaces.Persistence;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
+using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
+using SubastaYa.Infrastructure.Data;
 using SubastaYa.Infrastructure.Repositories;
 
 
-var builder = WebApplication.CreateBuilder(args);   
+var builder = WebApplication.CreateBuilder(args);
 
 // MODULO 1 - ¿QUE SERVICIOS EXISTEN? : Se registran en el contenedor de DI.   Todavía no corre nada.
-builder.Services.AddEndpointsApiExplorer();  
-builder.Services.AddSwaggerGen();   
-builder.Services.AddControllers();  
+
+builder.Services.AddEndpointsApiExplorer();                     // Habilita que .NET pueda describir los endpoints de la API (necesario para que Swagger los detecte)
+builder.Services.AddSwaggerGen();                                // Genera automáticamente la documentación OpenAPI/Swagger de todos los endpoints
+builder.Services.AddControllers();                               // Habilita el uso de Controllers (busca clases con [ApiController] y las conecta a las rutas HTTP)
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
-builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();  
-builder.Services.AddScoped<ObtenerSubastaHandler>();          // AGREGUE: el servicio de ObtenerSubastaHandler
+
+builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();       // Cuando alguien pida ISubastaRepository, dale una instancia real de SubastaRepository (implementación con EF Core)
+builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();   // Ídem, para las consultas/movimientos de billeteras
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();                     // Ídem, para poder guardar todos los cambios juntos de forma atómica
+
+builder.Services.AddScoped<ObtenerSubastaHandler>();              // Registra el Handler que resuelve la consulta de una subasta por id
+builder.Services.AddScoped<RegistrarPujaCommandHandler>();        // Registra el Handler que ejecuta la lógica de negocio de registrar una puja (escrow + anti-sniping)
 
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.

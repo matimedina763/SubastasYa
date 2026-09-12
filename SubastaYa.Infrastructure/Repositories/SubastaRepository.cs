@@ -17,7 +17,12 @@ public class SubastaRepository : ISubastaRepository
     public async Task<Subasta?> ObtenerSubastaPorIdAsync(int id)
     {
         return await _dbContext.Subastas
-            .Include(s => s.Pujas) // necesario para que OfertaActual() de la entidad pueda calcularse bien
+            .Include(s => s.Pujas)
             .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public void AgregarPuja(Puja puja)
+    {
+        _dbContext.Pujas.Add(puja);
     }
 }
