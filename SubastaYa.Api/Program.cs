@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;                // En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
-using SubastaYa.Application.Interfaces.Persistence;
-using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
 using SubastaYa.Infrastructure.Data;
+using SubastaYa.Application.Interfaces.Persistence;
+using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Infrastructure.Repositories;
-
 
 
 var builder = WebApplication.CreateBuilder(args);   
@@ -11,10 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 // MODULO 1 - ¿QUE SERVICIOS EXISTEN? : Se registran en el contenedor de DI.   Todavía no corre nada.
 builder.Services.AddEndpointsApiExplorer();  
 builder.Services.AddSwaggerGen();   
-builder.Services.AddControllers();
+builder.Services.AddControllers();  
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
-builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();
-builder.Services.AddScoped<ObtenerSubastaHandler>();
+builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();  
+builder.Services.AddScoped<ObtenerSubastaHandler>();          // AGREGUE: el servicio de ObtenerSubastaHandler
 
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
@@ -24,7 +23,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();   
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
 
