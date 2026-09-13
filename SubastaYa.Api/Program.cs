@@ -2,9 +2,12 @@ using Microsoft.EntityFrameworkCore;                // En teoría, no puede habe
 using SubastaYa.Application.Interfaces.Persistence;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
+using SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
 using SubastaYa.Infrastructure.Data;
 using SubastaYa.Infrastructure.Repositories;
+using SubastaYa.Infrastructure.Workers;
 using SubastaYa.Api.Middleware;
+
 
 
 
@@ -24,6 +27,10 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();                     // Í
 builder.Services.AddScoped<ObtenerSubastaHandler>();              // Registra el Handler que resuelve la consulta de una subasta por id
 builder.Services.AddScoped<RegistrarPujaCommandHandler>();        // Registra el Handler que ejecuta la lógica de negocio de registrar una puja (escrow + anti-sniping)
 
+builder.Services.AddScoped<IAuditoriaLogRepository, AuditoriaLogRepository>();     // Cuando alguien pida IAuditoriaLogRepository, dale una instancia real de AuditoriaLogRepository (implementación con EF Core)
+builder.Services.AddScoped<CerrarSubastasVencidasCommandHandler>();               // Registra el Handler que cierra subastas vencidas (adjudica ganador o pasa a DESIERTA)
+
+builder.Services.AddHostedService<CierreSubastasWorker>();                        // Registra el Worker como un servicio de fondo: .NET lo arranca solo al iniciar la app y lo mantiene corriendo (ExecuteAsync en loop) durante toda su vida útil, sin que nadie lo invoque manualmente
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();

@@ -25,4 +25,12 @@ public class SubastaRepository : ISubastaRepository
     {
         _dbContext.Pujas.Add(puja);
     }
+
+    public async Task<List<Subasta>> ObtenerActivasVencidasAsync(DateTime ahora)
+    {
+        return await _dbContext.Subastas
+            .Include(s => s.Pujas)
+            .Where(s => s.Estado == "ACTIVA" && s.FechaFin <= ahora)
+            .ToListAsync();
+    }
 }
