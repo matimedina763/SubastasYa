@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;                // En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
+using SubastaYa.Api.Middleware;
 using SubastaYa.Application.Interfaces.Persistence;
+using SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
+using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
-using SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
 using SubastaYa.Infrastructure.Data;
 using SubastaYa.Infrastructure.Repositories;
 using SubastaYa.Infrastructure.Workers;
-using SubastaYa.Api.Middleware;
 
 
 
@@ -31,6 +32,8 @@ builder.Services.AddScoped<IAuditoriaLogRepository, AuditoriaLogRepository>();  
 builder.Services.AddScoped<CerrarSubastasVencidasCommandHandler>();               // Registra el Handler que cierra subastas vencidas (adjudica ganador o pasa a DESIERTA)
 
 builder.Services.AddHostedService<CierreSubastasWorker>();                        // Registra el Worker como un servicio de fondo: .NET lo arranca solo al iniciar la app y lo mantiene corriendo (ExecuteAsync en loop) durante toda su vida útil, sin que nadie lo invoque manualmente
+
+builder.Services.AddScoped<ListarSubastasQueryHandler>();   // Registra el Handler que lista subastas con filtros opcionales (estado, categoria, rango de precio) y ordenamiento; se crea una instancia nueva por cada request HTTP
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();
