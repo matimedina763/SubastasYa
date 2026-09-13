@@ -30,8 +30,8 @@ namespace SubastaYa.Api.Controllers
         public async Task<IActionResult> RegistrarPuja(int id, [FromBody] RegistrarPujaRequest request)
         {
             var command = new RegistrarPujaCommand(id, request.CompradorId, request.Monto);
-            await _registrarPujaHandler.Handle(command);
-            return Ok();
+            var pujaId = await _registrarPujaHandler.Handle(command);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
         }
     }
 }
