@@ -4,6 +4,8 @@ using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NA
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 using SubastaYa.Infrastructure.Data;
 using SubastaYa.Infrastructure.Repositories;
+using SubastaYa.Api.Middleware;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +28,7 @@ builder.Services.AddScoped<RegistrarPujaCommandHandler>();        // Registra el
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();
 
-//app.UseMiddleware<ExceptionMiddleware>();  // Captura las excepciones y devuelve un error 500 con el mensaje de la excepción.  Se puede mejorar para que devuelva un error 400 si es una excepción de negocio.  Se puede mejorar para que devuelva un error 404 si es una excepción de no encontrado.  Se puede mejorar para que devuelva un error 401 si es una excepción de no autorizado.  Se puede mejorar para que devuelva un error 403 si es una excepción de no permitido.  Se puede mejorar para que devuelva un error 409 si es una excepción de conflicto.  Se puede mejorar para que devuelva un error 422 si es una excepción de validación.  Se puede mejorar para que devuelva un error 429 si es una excepción de demasiadas solicitudes.  Se puede mejorar para que devuelva un error 503 si es una excepción de servicio no disponible.  Se puede mejorar para que devuelva un error 504 si es una excepción de tiempo de espera agotado.  Se puede mejorar para que devuelva un error 505 si es una excepción de versión no soportada.  Se puede mejorar para que devuelva un error 511 si es una excepción de autenticación requerida.
+app.UseMiddleware<ExceptionMiddleware>();  // Captura las excepciones y devuelve un error 500 con el mensaje de la excepción.  Se puede mejorar para que devuelva un error 400 si es una excepción de negocio.  Se puede mejorar para que devuelva un error 404 si es una excepción de no encontrado.  Se puede mejorar para que devuelva un error 401 si es una excepción de no autorizado.  Se puede mejorar para que devuelva un error 403 si es una excepción de no permitido.  Se puede mejorar para que devuelva un error 409 si es una excepción de conflicto.  Se puede mejorar para que devuelva un error 422 si es una excepción de validación.  Se puede mejorar para que devuelva un error 429 si es una excepción de demasiadas solicitudes.  Se puede mejorar para que devuelva un error 503 si es una excepción de servicio no disponible.  Se puede mejorar para que devuelva un error 504 si es una excepción de tiempo de espera agotado.  Se puede mejorar para que devuelva un error 505 si es una excepción de versión no soportada.  Se puede mejorar para que devuelva un error 511 si es una excepción de autenticación requerida.
 
 if (app.Environment.IsDevelopment())
 {

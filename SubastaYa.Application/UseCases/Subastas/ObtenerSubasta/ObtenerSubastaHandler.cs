@@ -1,5 +1,6 @@
 using SubastaYa.Application.DTOs;
 using SubastaYa.Application.Interfaces.Persistence;
+using SubastaYa.Domain.Exceptions;
 
 namespace SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
 
@@ -18,7 +19,7 @@ public class ObtenerSubastaHandler
 
         if (subasta == null)
         {
-            throw new Exception("Subasta no encontrada");
+            throw new SubastaNoEncontradaException(request.Id);
         }
 
         return new SubastaDto
