@@ -49,8 +49,20 @@ builder.Services.AddScoped<ObtenerMovimientosQueryHandler>();    // Registra el 
 builder.Services.AddScoped<MisPujasQueryHandler>();            // Registra el Handler que trae las subastas donde un usuario pujó, indicando su última oferta, si va liderando y el estado de cada subasta
 builder.Services.AddScoped<MisPublicacionesQueryHandler>();    // Registra el Handler que trae las subastas publicadas por un vendedor, con cantidad de pujas y monto recaudado si ya se vendió
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5500", "http://127.0.0.1:5500")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+    });
+});
+
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();
+
+app.UseCors("frontend");  // Permite que el frontend pueda hacer llamadas a la API.  Se configura en Program.cs.
 
 app.UseMiddleware<ExceptionMiddleware>();  // Captura las excepciones y devuelve un error 500 con el mensaje de la excepción.  Se puede mejorar para que devuelva un error 400 si es una excepción de negocio.  Se puede mejorar para que devuelva un error 404 si es una excepción de no encontrado.  Se puede mejorar para que devuelva un error 401 si es una excepción de no autorizado.  Se puede mejorar para que devuelva un error 403 si es una excepción de no permitido.  Se puede mejorar para que devuelva un error 409 si es una excepción de conflicto.  Se puede mejorar para que devuelva un error 422 si es una excepción de validación.  Se puede mejorar para que devuelva un error 429 si es una excepción de demasiadas solicitudes.  Se puede mejorar para que devuelva un error 503 si es una excepción de servicio no disponible.  Se puede mejorar para que devuelva un error 504 si es una excepción de tiempo de espera agotado.  Se puede mejorar para que devuelva un error 505 si es una excepción de versión no soportada.  Se puede mejorar para que devuelva un error 511 si es una excepción de autenticación requerida.
 
