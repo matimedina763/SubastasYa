@@ -1,3 +1,4 @@
+using SubastaYa.Domain.Entities;
 using SubastaYa.Domain.Exceptions;
 using SubastaYa.Application.Interfaces.Persistence;
 
@@ -6,29 +7,28 @@ namespace SubastaYa.Application.UseCases.Subastas.CrearSubasta;
 public class CrearSubastaCommandHandler
 {
     private readonly ISubastaRepository _subastaRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CrearSubastaCommandHandler(ISubastaRepository subastaRepository)
+    public CrearSubastaCommandHandler(ISubastaRepository subastaRepository, IUnitOfWork unitOfWork)
     {
         _subastaRepository = subastaRepository;
+        _unitOfWork = unitOfWork;
     }
+
     public async Task<int> Handle(CrearSubastaCommand command)
     {
-        if (!command.PrecioBase.HasValue || command.PrecioBase.Value <= 0)
-        {
+        if (command.PrecioBase <= 0)
             throw new DatosSubastaInvalidosException("El precio base es obligatorio y debe ser positivo.");
-        }
 
-        if (!command.IncrementoMinimo.HasValue || command.IncrementoMinimo.Value <= 0)
-        {
+        if (command.IncrementoMinimo <= 0)
             throw new DatosSubastaInvalidosException("El incremento mínimo es obligatorio y debe ser positivo.");
-        }
 
-        if (!command.FechaInicio.HasValue || !command.FechaFin.HasValue || command.FechaFin <= command.FechaInicio)
-        {
-            throw new DatosSubastaInvalidosException("Las fechas de inicio y fin son obligatorias y la fecha de fin debe ser posterior a la fecha de inicio.");
-        }
+        if (command.FechaFin <= command.FechaInicio)
+            throw new DatosSubastaInvalidosException("La fecha de fin debe ser posterior a la fecha de inicio.");
 
-        var subasta = new Domain.Entities.Subasta
+        var estadoInicial = command.FechaInicio > DateTime.UtcNow ? "PROGRAMADA" : "ACTIVA";
+
+        var subasta = new Subasta
         {
             VendedorId = command.VendedorId,
             Titulo = command.Titulo,
@@ -38,10 +38,13 @@ public class CrearSubastaCommandHandler
             PrecioBase = command.PrecioBase,
             IncrementoMinimo = command.IncrementoMinimo,
             FechaInicio = command.FechaInicio,
-            FechaFin = command.FechaFin
+            FechaFin = command.FechaFin,
+            Estado = estadoInicial
         };
 
-        await _subastaRepository.AgregarAsync(subasta);
+        _subastaRepository.Agregar(subasta);
+        await _unitOfWork.SaveChangesAsync();
+
         return subasta.Id;
     }
 }

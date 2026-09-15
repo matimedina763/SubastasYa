@@ -8,7 +8,8 @@ public interface ISubastaRepository
     void AgregarPuja(Puja puja);
     Task<List<Subasta>> ObtenerActivasVencidasAsync(DateTime ahora);
     Task<List<Subasta>> ListarAsync(
-        string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor); 
+        string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor);
 
-    Task AgregarAsync(Subasta subasta);
+    void Agregar(Subasta subasta); 
+
 }
