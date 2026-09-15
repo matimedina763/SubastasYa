@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;                // En teoría, no puede haber referencias de EF Core en la capa de Presentación. Se justifica registrando ISubastaRepository. (Composition root).
 using SubastaYa.Api.Middleware;
 using SubastaYa.Application.Interfaces.Persistence;
+using SubastaYa.Application.UseCases.Billeteras.DepositarSaldo;
+using SubastaYa.Application.UseCases.Billeteras.ObtenerMovimientos;
+using SubastaYa.Application.UseCases.Billeteras.ObtenerSaldo;
 using SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
-using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
 using SubastaYa.Application.UseCases.Subastas.CrearSubasta;
+using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 using SubastaYa.Infrastructure.Data;
@@ -36,6 +39,10 @@ builder.Services.AddHostedService<CierreSubastasWorker>();                      
 
 builder.Services.AddScoped<ListarSubastasQueryHandler>();   // Registra el Handler que lista subastas con filtros opcionales (estado, categoria, rango de precio) y ordenamiento; se crea una instancia nueva por cada request HTTP
 builder.Services.AddScoped<CrearSubastaCommandHandler>();   // Registra el Handler que crea subastas; se crea una instancia nueva por cada request HTTP
+
+builder.Services.AddScoped<ObtenerSaldoQueryHandler>();          // Registra el Handler que consulta el saldo (Total/Retenido/Disponible) de la billetera de un usuario
+builder.Services.AddScoped<DepositarSaldoCommandHandler>();      // Registra el Handler que acredita saldo simulado a una billetera y lo deja asentado en el Ledger
+builder.Services.AddScoped<ObtenerMovimientosQueryHandler>();    // Registra el Handler que trae el historial de movimientos (depositos, retenciones, liberaciones, pagos, cobros) de la billetera de un usuario
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();
