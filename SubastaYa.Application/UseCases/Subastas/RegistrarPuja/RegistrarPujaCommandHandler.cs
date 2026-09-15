@@ -35,6 +35,10 @@ public class RegistrarPujaCommandHandler
         if (subasta.Estado != "ACTIVA")
             throw new SubastaNoActivaException();
 
+        // ── El vendedor no puja sobre su propia subasta ──────────────────────────────────────────────
+        if (subasta.VendedorId == command.CompradorId)
+            throw new PujaInvalidaException("El vendedor no puede pujar en su propia subasta.");
+
         // ── VALIDACIÓN 3: ¿el monto alcanza? ────────────────────────────
         // Usa la regla de negocio que vive en la propia entidad Subasta
         // (oferta actual + incremento mínimo). No se recalcula acá,
