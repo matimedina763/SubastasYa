@@ -9,4 +9,6 @@ public interface ISubastaRepository
     Task<List<Subasta>> ObtenerActivasVencidasAsync(DateTime ahora);
     Task<List<Subasta>> ListarAsync(
         string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor); 
+
+    Task AgregarAsync(Subasta subasta);
 }

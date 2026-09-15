@@ -2,6 +2,7 @@
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
+using SubastaYa.Application.UseCases.Subastas.CrearSubasta;
 
 namespace SubastaYa.Api.Controllers
 {
@@ -12,22 +13,17 @@ namespace SubastaYa.Api.Controllers
         private readonly ObtenerSubastaHandler _obtenerSubastaHandler;
         private readonly RegistrarPujaCommandHandler _registrarPujaHandler;
         private readonly ListarSubastasQueryHandler _listarSubastasHandler;
-
+        private readonly CrearSubastaCommandHandler _crearSubastaHandler;
         public SubastasController(
             ObtenerSubastaHandler obtenerSubastaHandler,
             RegistrarPujaCommandHandler registrarPujaHandler,
-            ListarSubastasQueryHandler listarSubastasHandler)
+            ListarSubastasQueryHandler listarSubastasHandler,
+            CrearSubastaCommandHandler crearSubastaHandler)
         {
             _obtenerSubastaHandler = obtenerSubastaHandler;
             _registrarPujaHandler = registrarPujaHandler;
             _listarSubastasHandler = listarSubastasHandler;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Listar([FromQuery] ListarSubastasQuery query)
-        {
-            var resultado = await _listarSubastasHandler.Handle(query);
-            return Ok(resultado);
+            _crearSubastaHandler = crearSubastaHandler;
         }
 
         [HttpGet("{id}")]
@@ -44,5 +40,19 @@ namespace SubastaYa.Api.Controllers
             var pujaId = await _registrarPujaHandler.Handle(command);
             return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Listar([FromQuery] ListarSubastasQuery query)
+        {
+            var resultado = await _listarSubastasHandler.Handle(query);
+            return Ok(resultado);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearSubasta([FromBody] CrearSubastaCommand command)
+        {
+            var subastaId = await _crearSubastaHandler.Handle(command);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id = subastaId }, new { subastaId });
+        }        
     }
 }

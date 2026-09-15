@@ -24,3 +24,8 @@ public class SubastaNoActivaException : DomainException
 {
     public SubastaNoActivaException() : base("La subasta no está activa, no se pueden registrar pujas.") { }
 }
+
+public class DatosSubastaInvalidosException : DomainException
+{
+    public DatosSubastaInvalidosException(string mensaje) : base(mensaje) { }
+}   

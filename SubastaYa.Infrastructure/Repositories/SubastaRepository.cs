@@ -66,4 +66,10 @@ public class SubastaRepository : ISubastaRepository
 
         return subastas;
     }
+
+    public async Task AgregarAsync(Subasta subasta)
+    {
+        _dbContext.Subastas.Add(subasta);
+        await _dbContext.SaveChangesAsync();
+    }
 }

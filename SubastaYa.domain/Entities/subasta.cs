@@ -5,9 +5,9 @@ namespace SubastaYa.Domain.Entities;
 public class Subasta
 {
     public int Id { get; set; }
-    public int VendedorId { get; set; }
+    public int VendedorId { get; set; } 
     public Usuario Vendedor { get; set; } = null!;
-    public int CategoriaId { get; set; }
+    public int CategoriaId { get; set; } 
     public Categoria Categoria { get; set; } = null!;
     public string Titulo { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
