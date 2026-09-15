@@ -7,6 +7,8 @@ using SubastaYa.Application.UseCases.Billeteras.ObtenerSaldo;
 using SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
 using SubastaYa.Application.UseCases.Subastas.CrearSubasta;
 using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
+using SubastaYa.Application.UseCases.Subastas.MisPublicaciones;
+using SubastaYa.Application.UseCases.Subastas.MisPujas;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 using SubastaYa.Infrastructure.Data;
@@ -43,6 +45,9 @@ builder.Services.AddScoped<CrearSubastaCommandHandler>();   // Registra el Handl
 builder.Services.AddScoped<ObtenerSaldoQueryHandler>();          // Registra el Handler que consulta el saldo (Total/Retenido/Disponible) de la billetera de un usuario
 builder.Services.AddScoped<DepositarSaldoCommandHandler>();      // Registra el Handler que acredita saldo simulado a una billetera y lo deja asentado en el Ledger
 builder.Services.AddScoped<ObtenerMovimientosQueryHandler>();    // Registra el Handler que trae el historial de movimientos (depositos, retenciones, liberaciones, pagos, cobros) de la billetera de un usuario
+
+builder.Services.AddScoped<MisPujasQueryHandler>();            // Registra el Handler que trae las subastas donde un usuario pujó, indicando su última oferta, si va liderando y el estado de cada subasta
+builder.Services.AddScoped<MisPublicacionesQueryHandler>();    // Registra el Handler que trae las subastas publicadas por un vendedor, con cantidad de pujas y monto recaudado si ya se vendió
 
 // Desde está línea para abajo no adiciono más tools, solo configurar el comportamiento de la API.
 var app = builder.Build();

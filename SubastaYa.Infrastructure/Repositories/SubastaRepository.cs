@@ -71,4 +71,19 @@ public class SubastaRepository : ISubastaRepository
     {
         _dbContext.Subastas.Add(subasta);
     }
+    public async Task<List<Subasta>> ObtenerSubastasConPujaDeUsuarioAsync(int usuarioId)
+    {
+        return await _dbContext.Subastas
+            .Include(s => s.Pujas)
+            .Where(s => s.Pujas.Any(p => p.CompradorId == usuarioId))
+            .ToListAsync();
+    }
+
+    public async Task<List<Subasta>> ObtenerPorVendedorIdAsync(int vendedorId)
+    {
+        return await _dbContext.Subastas
+            .Include(s => s.Pujas)
+            .Where(s => s.VendedorId == vendedorId)
+            .ToListAsync();
+    }
 }
