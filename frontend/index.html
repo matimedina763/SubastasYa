@@ -3,16 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubastaYa</title>
+    <title>SubastaYa - Ventas y Compras en Línea: Compra y Gana ¡Ya!</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container mt-4">
-        <h1>SubastaYa!</h1>
-        <p>Bienvenido a SubastaYa, la plataforma de subastas en línea donde puedes encontrar una amplia variedad de productos y servicios. </p>
-        <div id="lista" class="row"></div>
+    <div class="container py-4">
+        <header class="header text-center">
+            <img class="logo" src="https://images.unsplash.com/photo-1554629947-3343fcda6887?ixlib=rb-4.0.0&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Logo">
+            <span class="slogan">Compra y Gana ¡Ya!</span>
+            <hr> 
+            <class="btn-group" role="group" aria-label="Basic example">
+                <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
+                <a href="register.html" class="btn btn-secondary">Registrarse</a>
+            </class>
+            <hr>
+            <class="btn-group" role="group" aria-label="Basic example">
+                <a href="subasta.html" class="btn btn-success">Crear Subasta</a>
+                <a href="mis_subastas.html" class="btn btn-info">Mis Subastas</a>
+            </class>
+            <hr>
+        </header>
+        
+        <main>
+            <section class="subastas">
+                <h2 class="mb-4">Subastas Activas</h2>
+                <div id="lista" class="row">
+                    <p>Cargando . . .</p>
+                </div>     
+            </section>
+        </main>
     </div>
+
     <script src="app.js"></script>    
+
 </body>
 </html>

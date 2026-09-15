@@ -1,0 +1,100 @@
+:root {
+    --azul: #001aff;
+    --amarillo: #b3d80e;
+    --rojo: #e01d1d;
+    --fondo: #ffffffc5;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: var(--fondo);
+    color: #968d8d;
+    margin: 0;
+    padding: 0;
+}
+
+.container, .main, body > div {
+    background: white;
+    max-width: 700px;
+    margin: 30px 0 0 0;
+    padding: 30px 0 0 0;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.header, .logo, h1 {
+    text-align: center;
+}
+
+.header h1, h1{
+    margin-bottom: 1rem;
+    font-weight: 800;
+    font-size: 3rem;
+}   
+
+.slogan, .subtitulo {
+    display: block;
+    color: var(--azul);
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;    
+    margin-bottom: 15px; 
+}
+
+hr{opacity: .1; margin: 20px 0 0 0;}
+
+button, .btn{
+    border: none;
+    border-radius: 50px 0 0 0;
+    padding: 10px 20px 0 0;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s ease !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+button:hover, .btn:hover{
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.subastas h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.card {
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover{
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--azul);
+    border: none;
+    border-radius: 2rem;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #0000cc;
+    transition: background-color 0.3s ease;
+}
+
+img{
+    display: block;
+    margin: 0 0 10px 0;
+}
