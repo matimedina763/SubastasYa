@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubastaYa - Billetera Virtual</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="billetera-page">
+    <div class="container py-4">
+
+        <header class="header text-center mb-4">
+            <h1>Mi Billetera Virtual</h1>
+        </header>
+        
+        <!-- Resumen de saldos -->
+        <section class="mb-4">
+            <h2 class="h4 mb-3">Tus Saldos</h2>
+
+            <div class="row g-3">
+
+                <!-- Saldo total -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="h5">TOTAL</h3>
+                            <p id="saldoTotal" class="fs-3 fw-bold">$0,00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saldo retenido -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="h5">RETENIDO</h3>
+                            <p id="saldoRetenido" class="fs-3 fw-bold">$0,00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saldo disponible -->
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <h3 class="h5">DISPONIBLE</h3>
+                            <p id="saldoDisponible" class="fs-3 fw-bold">$0,00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Carga de saldo -->
+        <section class="mb-4">
+            <h2 class="h4 mb-3">Carga de saldo simulada</h2>
+
+            
+            <form id="formDeposito">
+                <div class="row align-items-end g-3">
+                    <input
+                        type="number"
+                        id="montoDeposito"
+                        class="form-control"
+                        min="1"
+                        step="0.01"
+                        placeholder="Monto a acreditar"
+                        required
+                    >    
+                    <button type="submit" class="btn btn-primary w-100">Cargar</button>    
+                        
+                </div>
+            </form>    
+                        
+            <div id="mensajeDeposito" class="mt-3"></div>                    
+        </section>
+
+        <!-- Historial de movimientos -->
+        <section class="mb-4">
+            <h2 class="h4 mb-3">Mis Movimientos</h2>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Subasta</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaMovimientos">
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                No hay movimientos por el momento.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="billetera.js"></script>
+</body>
+</html>
