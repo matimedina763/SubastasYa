@@ -90,13 +90,17 @@ function abrirModalPuja(subastaId) {
 async function confirmarPuja() {
     const compradorId = parseInt(document.getElementById("selectComprador").value);
     const monto = parseFloat(document.getElementById("inputMonto").value);
-    const alerta = document.getElementById("alertaPuja");
+    const btnConfirmar = document.getElementById("btnConfirmarPuja");
 
     if (!monto || monto <= 0) {
-        alerta.textContent = "Ingresá un monto válido.";
-        alerta.classList.remove("d-none");
+        mostrarToast("Ingresá un monto válido.", "error");
         return;
     }
+
+    // Spinner: deshabilitar el botón y mostrar estado de carga
+    const textoOriginal = btnConfirmar.innerHTML;
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Procesando...`;
 
     try {
         const res = await fetch(`${API_URL}/subastas/${subastaSeleccionadaId}/pujas`, {
@@ -107,18 +111,20 @@ async function confirmarPuja() {
 
         if (!res.ok) {
             const errorBody = await res.json();
-            alerta.textContent = errorBody.error || "Ocurrió un error al registrar la puja.";
-            alerta.classList.remove("d-none");
-            return; // no cerramos el modal, para que puedan corregir
+            mostrarToast(errorBody.error || "Ocurrió un error al registrar la puja.", "error");
+            return;
         }
 
-        // Éxito: cerrar el modal y refrescar la lista
         bootstrap.Modal.getInstance(document.getElementById("modalPujar")).hide();
+        mostrarToast("¡Puja registrada con éxito!", "exito");
         cargarSubastas();
 
     } catch (error) {
-        alerta.textContent = "No se pudo conectar con el servidor.";
-        alerta.classList.remove("d-none");
+        mostrarToast("No se pudo conectar con el servidor.", "error");
+    } finally {
+        // Se ejecuta siempre, haya éxito o error -> el botón vuelve a su estado normal
+        btnConfirmar.disabled = false;
+        btnConfirmar.innerHTML = textoOriginal;
     }
 }
 

@@ -1,12 +1,10 @@
 const API_URL = "https://localhost:7006/api";
 
 document.getElementById("formCrearSubasta").addEventListener("submit", async function (e) {
-    e.preventDefault(); // evita que el formulario recargue la página, como hace por defecto
+    e.preventDefault();
 
-    const alerta = document.getElementById("alertaCrear");
-    const exito = document.getElementById("exitoCrear");
-    alerta.classList.add("d-none");
-    exito.classList.add("d-none");
+    const btnSubmit = document.querySelector("#formCrearSubasta button[type='submit']");
+    const textoOriginal = btnSubmit.innerHTML;
 
     const body = {
         vendedorId: parseInt(document.getElementById("vendedorId").value),
@@ -16,9 +14,12 @@ document.getElementById("formCrearSubasta").addEventListener("submit", async fun
         categoriaId: parseInt(document.getElementById("categoriaId").value),
         precioBase: parseFloat(document.getElementById("precioBase").value),
         incrementoMinimo: parseFloat(document.getElementById("incrementoMinimo").value),
-        fechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString(), // ← convierte a UTC real
-        fechaFin: new Date(document.getElementById("fechaFin").value).toISOString()        // ← convierte a UTC real
+        fechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString(),
+        fechaFin: new Date(document.getElementById("fechaFin").value).toISOString()
     };
+
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Publicando...`;
 
     try {
         const res = await fetch(`${API_URL}/subastas`, {
@@ -29,17 +30,17 @@ document.getElementById("formCrearSubasta").addEventListener("submit", async fun
 
         if (!res.ok) {
             const errorBody = await res.json();
-            alerta.textContent = errorBody.error || "Ocurrió un error al crear la subasta.";
-            alerta.classList.remove("d-none");
+            mostrarToast(errorBody.error || "Ocurrió un error al crear la subasta.", "error");
             return;
         }
 
-        exito.textContent = "¡Subasta creada con éxito!";
-        exito.classList.remove("d-none");
+        mostrarToast("¡Subasta creada con éxito!", "exito");
         document.getElementById("formCrearSubasta").reset();
 
     } catch (error) {
-        alerta.textContent = "No se pudo conectar con el servidor.";
-        alerta.classList.remove("d-none");
+        mostrarToast("No se pudo conectar con el servidor.", "error");
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = textoOriginal;
     }
 });

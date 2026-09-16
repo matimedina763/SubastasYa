@@ -45,11 +45,15 @@ async function cargarMovimientos(usuarioId) {
 }
 
 async function depositar(event) {
-    event.preventDefault(); // evita que el form recargue la página
+    event.preventDefault();
 
     const usuarioId = document.getElementById("selectUsuario").value;
     const monto = parseFloat(document.getElementById("montoDeposito").value);
-    const mensaje = document.getElementById("mensajeDeposito");
+    const btnSubmit = document.querySelector("#formDeposito button[type='submit']");
+    const textoOriginal = btnSubmit.innerHTML;
+
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Depositando...`;
 
     try {
         const respuesta = await fetch(`${API_URL}/${usuarioId}/depositos`, {
@@ -60,19 +64,21 @@ async function depositar(event) {
 
         if (!respuesta.ok) {
             const errorBody = await respuesta.json();
-            mensaje.innerHTML = `<div class="alert alert-danger">${errorBody.error || "Error al depositar."}</div>`;
+            mostrarToast(errorBody.error || "Error al depositar.", "error");
             return;
         }
 
-        mensaje.innerHTML = `<div class="alert alert-success">¡Depósito realizado con éxito!</div>`;
+        mostrarToast("¡Depósito realizado con éxito!", "exito");
         document.getElementById("formDeposito").reset();
 
-        // Refrescar saldo y movimientos, ya que cambiaron
         cargarBilletera(usuarioId);
         cargarMovimientos(usuarioId);
 
     } catch (error) {
-        mensaje.innerHTML = `<div class="alert alert-danger">No se pudo conectar con el servidor.</div>`;
+        mostrarToast("No se pudo conectar con el servidor.", "error");
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = textoOriginal;
     }
 }
 
