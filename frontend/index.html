@@ -34,7 +34,40 @@
             </section>
         </main>
     </div>
+        <!-- Modal para pujar -->
+    <div class="modal fade" id="modalPujar" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Realizar puja</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div id="alertaPuja" class="alert alert-danger d-none"></div>
 
+            <div class="mb-3">
+            <label class="form-label">¿Quién sos?</label>
+            <select id="selectComprador" class="form-select">
+                <option value="2">Comprador 1</option>
+                <option value="3">Comprador 2</option>
+                <option value="4">Sin Fondos (para probar rechazo)</option>
+            </select>
+            </div>
+
+            <div class="mb-3">
+            <label class="form-label">Monto a ofertar</label>
+            <input type="number" id="inputMonto" class="form-control" placeholder="Ej: 46000">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" id="btnConfirmarPuja" class="btn btn-primary">Confirmar puja</button>
+        </div>
+        </div>
+    </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>    
 
 </body>

@@ -23,6 +23,7 @@ public class ListarSubastasQueryHandler
             Titulo = s.Titulo,
             Descripcion = s.Descripcion,
             PrecioInicial = s.PrecioBase,
+            OfertaActual = s.OfertaActual(),  
             FechaInicio = s.FechaInicio,
             FechaFin = s.FechaFin,
             Activa = s.Estado == "ACTIVA"

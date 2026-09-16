@@ -73,7 +73,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();                                         // Obliga a que todo entre por https.
-app.UseCors("frontend");                                           // Permite que el frontend pueda hacer llamadas a la API.  Se configura en Program.cs.
 app.MapControllers();                                              // Activa los paths (rutas) de los controladores API.
 
 using (var scope = app.Services.CreateScope())
