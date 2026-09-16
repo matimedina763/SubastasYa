@@ -18,6 +18,7 @@ public class SubastaRepository : ISubastaRepository
     {
         return await _dbContext.Subastas
             .Include(s => s.Pujas)
+                .ThenInclude(p => p.Comprador)  // ← nuevo
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
@@ -37,7 +38,10 @@ public class SubastaRepository : ISubastaRepository
     public async Task<List<Subasta>> ListarAsync(
     string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor)
     {
-        var query = _dbContext.Subastas.Include(s => s.Pujas).AsQueryable();
+        var query = _dbContext.Subastas
+            .Include(s => s.Pujas)
+                .ThenInclude(p => p.Comprador)  // ← nuevo
+            .AsQueryable();
 
         if (!string.IsNullOrEmpty(estado))
             query = query.Where(s => s.Estado == estado);

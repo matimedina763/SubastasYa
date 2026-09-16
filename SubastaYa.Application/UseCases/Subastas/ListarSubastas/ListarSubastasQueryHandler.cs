@@ -17,16 +17,23 @@ public class ListarSubastasQueryHandler
         var subastas = await _subastaRepository.ListarAsync(
             query.Estado, query.CategoriaId, query.PrecioMin, query.PrecioMax, query.OrdenarPor);
 
-        return subastas.Select(s => new SubastaDto
+        return subastas.Select(s =>
         {
-            Id = s.Id,
-            Titulo = s.Titulo,
-            Descripcion = s.Descripcion,
-            PrecioInicial = s.PrecioBase,
-            OfertaActual = s.OfertaActual(),  
-            FechaInicio = s.FechaInicio,
-            FechaFin = s.FechaFin,
-            Activa = s.Estado == "ACTIVA"
+            var pujaLider = s.Pujas.OrderByDescending(p => p.Monto).FirstOrDefault();
+
+            return new SubastaDto
+            {
+                Id = s.Id,
+                Titulo = s.Titulo,
+                Descripcion = s.Descripcion,
+                PrecioInicial = s.PrecioBase,
+                OfertaActual = s.OfertaActual(),
+                FechaInicio = s.FechaInicio,
+                FechaFin = s.FechaFin,
+                Activa = s.Estado == "ACTIVA",
+                Estado = s.Estado,
+                LiderNombre = pujaLider?.Comprador?.Nombre  // null si nadie pujó todavía
+            };
         }).ToList();
     }
 }

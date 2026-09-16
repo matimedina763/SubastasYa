@@ -98,3 +98,21 @@ img{
     display: block;
     margin: 0 0 10px 0;
 }
+
+.temporizador {
+    font-weight: bold;
+    color: #333;
+}
+
+.temporizador-critico {
+    color: white;
+    background-color: var(--rojo);
+    padding: 4px 8px;
+    border-radius: 6px;
+    animation: parpadeo 1s infinite;
+}
+
+@keyframes parpadeo {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}

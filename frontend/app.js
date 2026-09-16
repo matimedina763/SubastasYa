@@ -2,6 +2,11 @@ const API_URL = "https://localhost:7006/api";
 let subastaSeleccionadaId = null; // guardamos acá el id de la subasta que se está por pujar
 
 async function cargarSubastas() {
+    await cargarSubastasActivas();
+    await cargarSubastasCerradas();
+}
+
+async function cargarSubastasActivas() {
     try {
         const res = await fetch(`${API_URL}/subastas?estado=ACTIVA`);
         const subastas = await res.json();
@@ -20,14 +25,54 @@ async function cargarSubastas() {
                         <p class="card-text">${subasta.descripcion}</p>
                         <p class="card-text">Precio inicial: $${subasta.precioInicial}</p>
                         <p class="card-text"><strong>Oferta actual: $${subasta.ofertaActual}</strong></p>
+                        <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
+                        <p class="card-text temporizador" data-fecha-fin="${subasta.fechaFin}">--:--</p>
                         <button class="btn btn-primary w-100" onclick="abrirModalPuja(${subasta.id})">Pujar</button>
                     </div>
                 </div>
             </div>
         `).join("");
+
+        iniciarTemporizadores();
     } catch (error) {
-        console.error("Error al cargar las subastas:", error);
-        document.getElementById("lista").innerHTML = "<p class='text-danger'>Error al cargar las subastas. Por favor, inténtelo de nuevo más tarde.</p>";
+        console.error("Error al cargar las subastas activas:", error);
+        document.getElementById("lista").innerHTML = "<p class='text-danger'>Error al cargar las subastas.</p>";
+    }
+}
+
+async function cargarSubastasCerradas() {
+    try {
+        // Traemos las dos categorías por separado y las combinamos
+        const [resFinalizadas, resDesiertas] = await Promise.all([
+            fetch(`${API_URL}/subastas?estado=FINALIZADA`),
+            fetch(`${API_URL}/subastas?estado=DESIERTA`)
+        ]);
+        const finalizadas = await resFinalizadas.json();
+        const desiertas = await resDesiertas.json();
+        const cerradas = [...finalizadas, ...desiertas];
+
+        const listaCerradas = document.getElementById("listaCerradas");
+
+        if (cerradas.length === 0) {
+            listaCerradas.innerHTML = "<p class='text-muted'>Todavía no hay subastas cerradas.</p>";
+            return;
+        }
+
+        listaCerradas.innerHTML = cerradas.map(subasta => `
+            <div class="col-md-4 mb-3">
+                <div class="card border-secondary">
+                    <div class="card-body">
+                        <h5 class="card-title text-muted">${subasta.titulo}</h5>
+                        <p class="card-text">${subasta.descripcion}</p>
+                        <p class="card-text">Oferta final: $${subasta.ofertaActual}</p>
+                        <p class="card-text">${subasta.liderNombre ? `Ganador: <strong>${subasta.liderNombre}</strong>` : "Sin ganador"}</p>
+                        <span class="badge ${subasta.estado === 'FINALIZADA' ? 'bg-success' : 'bg-secondary'}">${subasta.estado}</span>
+                    </div>
+                </div>
+            </div>
+        `).join("");
+    } catch (error) {
+        console.error("Error al cargar las subastas cerradas:", error);
     }
 }
 
@@ -75,6 +120,49 @@ async function confirmarPuja() {
         alerta.textContent = "No se pudo conectar con el servidor.";
         alerta.classList.remove("d-none");
     }
+}
+
+function iniciarTemporizadores() {
+    // Se ejecuta una vez por segundo, actualizando TODOS los temporizadores en pantalla
+    setInterval(() => {
+        document.querySelectorAll(".temporizador").forEach(el => {
+            const fechaFin = new Date(el.dataset.fechaFin);
+            const ahora = new Date();
+            const diferenciaMs = fechaFin - ahora;
+
+            if (diferenciaMs <= 0) {
+                el.textContent = "Cerrada";
+                el.classList.remove("temporizador-critico");
+                return;
+            }
+
+            const minutos = Math.floor(diferenciaMs / 60000);
+            const segundos = Math.floor((diferenciaMs % 60000) / 1000);
+                el.textContent = `⏱ ${formatearTiempo(diferenciaMs)}`;
+            // Zona crítica: último minuto -> cambia de color (regla anti-sniping visual)
+            if (diferenciaMs <= 60000) {
+                el.classList.add("temporizador-critico");
+            } else {
+                el.classList.remove("temporizador-critico");
+            }
+        });
+    }, 1000);
+}
+
+function formatearTiempo(diferenciaMs) {
+    const totalSegundos = Math.floor(diferenciaMs / 1000);
+    const dias = Math.floor(totalSegundos / 86400);
+    const horas = Math.floor((totalSegundos % 86400) / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const segundos = totalSegundos % 60;
+
+    let partes = [];
+    if (dias > 0) partes.push(`${dias}d`);
+    if (dias > 0 || horas > 0) partes.push(`${horas}h`);
+    if (dias > 0 || horas > 0 || minutos > 0) partes.push(`${minutos}m`);
+    partes.push(`${segundos.toString().padStart(2, "0")}s`); // los segundos siempre se muestran
+
+    return partes.join(" ");
 }
 
 document.getElementById("btnConfirmarPuja").addEventListener("click", confirmarPuja);

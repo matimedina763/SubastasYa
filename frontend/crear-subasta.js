@@ -16,8 +16,8 @@ document.getElementById("formCrearSubasta").addEventListener("submit", async fun
         categoriaId: parseInt(document.getElementById("categoriaId").value),
         precioBase: parseFloat(document.getElementById("precioBase").value),
         incrementoMinimo: parseFloat(document.getElementById("incrementoMinimo").value),
-        fechaInicio: document.getElementById("fechaInicio").value,
-        fechaFin: document.getElementById("fechaFin").value
+        fechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString(), // ← convierte a UTC real
+        fechaFin: new Date(document.getElementById("fechaFin").value).toISOString()        // ← convierte a UTC real
     };
 
     try {
