@@ -1,4 +1,5 @@
-﻿using SubastaYa.Application.Interfaces.Persistence;
+﻿using System.Text.Json;
+using SubastaYa.Application.Interfaces.Persistence;
 using SubastaYa.Domain.Entities;
 using SubastaYa.Domain.Exceptions;
 
@@ -9,129 +10,217 @@ public class RegistrarPujaCommandHandler
     private readonly ISubastaRepository _subastaRepository;
     private readonly IBilleteraRepository _billeteraRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditoriaLogRepository _auditoriaLogRepository;
 
     public RegistrarPujaCommandHandler(
         ISubastaRepository subastaRepository,
         IBilleteraRepository billeteraRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IAuditoriaLogRepository auditoriaLogRepository)
     {
         _subastaRepository = subastaRepository;
         _billeteraRepository = billeteraRepository;
         _unitOfWork = unitOfWork;
+        _auditoriaLogRepository = auditoriaLogRepository;
     }
 
     public async Task<int> Handle(RegistrarPujaCommand command)
     {
-        // ── VALIDACIÓN 1: ¿existe la subasta? ──────────────────────────
+        // - VALIDACION 1: ¿Existe la subasta? -
         // Si no existe, no tiene sentido seguir evaluando nada más.
-        // Se corta acá con una excepción específica -> el middleware la traduce a 404.
-        var subasta = await _subastaRepository.ObtenerSubastaPorIdAsync(command.SubastaId);
+        // Se corta acá con una excepción específica -->  El middleware la traduce a 404.
+        var subasta =
+            await _subastaRepository.ObtenerSubastaPorIdAsync(
+                command.SubastaId);
+
         if (subasta is null)
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "SUBASTA_NO_ENCONTRADA");
+
             throw new SubastaNoEncontradaException(command.SubastaId);
+        }
 
-        // ── VALIDACIÓN 2: ¿está ACTIVA? ─────────────────────────────────
-        // No se puede pujar en una subasta PROGRAMADA (todavía no arrancó)
-        // ni en una FINALIZADA/DESIERTA (ya cerró). -> 400 vía DomainException.
+        // -- VALIDACION 2: ¿ESTA ACTIVA? ---------
+        // No se puede pujar en una subasta ya PROGRAMADA
+        // ni en una FINALIZADA/DESIERTA ----> 400 vía DomainException
         if (subasta.Estado != "ACTIVA")
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "SUBASTA_NO_ACTIVA");
+
             throw new SubastaNoActivaException();
+        }
 
-        // ── El vendedor no puja sobre su propia subasta ──────────────────────────────────────────────
+        // -- El vendedor no puja sobre su propia subasta ------
         if (subasta.VendedorId == command.CompradorId)
-            throw new PujaInvalidaException("El vendedor no puede pujar en su propia subasta.");
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "VENDEDOR_INTENTA_PUJAR");
 
-        // ── VALIDACIÓN 3: ¿el monto alcanza? ────────────────────────────
-        // Usa la regla de negocio que vive en la propia entidad Subasta
-        // (oferta actual + incremento mínimo). No se recalcula acá,
-        // se delega a la entidad -> Rich Domain Model.
-        if (!subasta.EsPujaValida(command.Monto))
             throw new PujaInvalidaException(
-                $"El monto debe ser al menos {subasta.OfertaActual() + subasta.IncrementoMinimo}.");
+                "El vendedor no puede pujar en su propia subasta.");
+        }
 
-        // ── VALIDACIÓN 4: ¿el comprador tiene billetera? ────────────────
-        // Caso borde: no debería pasar en la práctica (todo usuario tiene
+        // --- VALIDACION 3: ¿El monto alcanza? ---
+        // Usa la regla de negocio que vive en la propia entidad Subasta
+        // (oferta actual + incremento mínimo).  No se recalcula acá,
+        // se delega a la entidad Rich Domain Model.
+        if (!subasta.EsPujaValida(command.Monto))
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "MONTO_INVALIDO");
+
+            throw new PujaInvalidaException(
+                $"El monto debe ser al menos " +
+                $"{subasta.OfertaActual() + subasta.IncrementoMinimo}.");
+        }
+
+        // --- VALIDACION 4: ¿El comprador tiene billetera? ---
+        // Caso borde: no debería pasar en la practica (todo usuario tiene
         // billetera por diseño), pero se chequea para no explotar con
-        // un NullReferenceException más abajo.
-        var billeteraComprador = await _billeteraRepository.ObtenerPorUsuarioIdAsync(command.CompradorId);
-        if (billeteraComprador is null)
-            throw new DomainException("El comprador no tiene una billetera asociada.");
+        // un NullRefenceException.
+        var billeteraComprador =
+            await _billeteraRepository.ObtenerPorUsuarioIdAsync(
+                command.CompradorId);
 
-        // ── VALIDACIÓN 5: ¿tiene fondos suficientes? ────────────────────
-        // Se compara contra SaldoDisponible (= SaldoTotal - SaldoRetenido),
-        // NUNCA contra SaldoTotal directo -> es la esencia del escrow:
+        if (billeteraComprador is null)
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "BILLETERA_NO_ENCONTRADA");
+
+            throw new DomainException(
+                "El comprador no tiene una billetera asociada.");
+        }
+
+        // --- VALIDACION 5: ¿Tiene fondos suficientes? --
+        // Compara contra SaldoDisponible (= SaldoTotal - SaldoRetenido),
+        // NUNCA contra SaldoTotal directo --> es la esencia del escrow:
         // la plata ya comprometida en otra subasta no cuenta como disponible.
         if (billeteraComprador.SaldoDisponible < command.Monto)
+        {
+            await RegistrarPujaRechazadaAsync(
+                command,
+                "FONDOS_INSUFICIENTES");
+
             throw new FondosInsuficientesException();
+        }
 
-        // ── ACCIÓN 1: liberar la retención del postor anterior ──────────
-        // Si había alguien liderando antes, hay que devolverle su saldo
-        // retenido ANTES de congelar el del nuevo postor. Se busca la
-        // puja de mayor monto ya cargada en la subasta (el líder actual).
-        var pujaLiderAnterior = subasta.Pujas.OrderByDescending(p => p.Monto).FirstOrDefault();
-        if (pujaLiderAnterior is not null)
-        {
-            var billeteraAnterior = await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaLiderAnterior.CompradorId);
-            if (billeteraAnterior is not null)
+        // ACCION 1 - Liberar la retención del postor anterior
+        var pujaGuardada =
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
-                billeteraAnterior.SaldoRetenido -= pujaLiderAnterior.Monto; // libera el monto retenido
-                billeteraAnterior.Version++;                                // optimistic locking manual (SQLite no lo hace solo)
+                var pujaLiderAnterior = subasta.Pujas
+                    .OrderByDescending(puja => puja.Monto)
+                    .FirstOrDefault();
 
-                _billeteraRepository.AgregarMovimientoLedger(new TransaccionLedger
+                if (pujaLiderAnterior is not null)
                 {
-                    BilleteraId = billeteraAnterior.Id,
-                    Monto = pujaLiderAnterior.Monto, // positivo: vuelve a estar disponible
-                    Tipo = "LIBERACION",
-                    SubastaId = subasta.Id
-                });
-            }
-        }
+                    var billeteraAnterior =
+                        await _billeteraRepository
+                            .ObtenerPorUsuarioIdAsync(
+                                pujaLiderAnterior.CompradorId);
 
-        // ── ACCIÓN 2: retener los fondos del nuevo postor ───────────────
-        // Se hace DESPUÉS de liberar al anterior, nunca antes -> evita que
-        // en algún punto intermedio haya dos personas con plata retenida
-        // por la misma subasta al mismo tiempo.
-        billeteraComprador.SaldoRetenido += command.Monto;
-        billeteraComprador.Version++;
+                    if (billeteraAnterior is not null)
+                    {
+                        billeteraAnterior.SaldoRetenido -=
+                            pujaLiderAnterior.Monto;
 
-        _billeteraRepository.AgregarMovimientoLedger(new TransaccionLedger
-        {
-            BilleteraId = billeteraComprador.Id,
-            Monto = -command.Monto, // negativo: sale del disponible
-            Tipo = "RETENCION",
-            SubastaId = subasta.Id
-        });
+                        billeteraAnterior.Version++;
 
-        // ── ACCIÓN 3: registrar la puja nueva ────────────────────────────
-        var nuevaPuja = new Puja
-        {
-            SubastaId = subasta.Id,
-            CompradorId = command.CompradorId,
-            Monto = command.Monto,
-            FechaPuja = DateTime.UtcNow
-        };
-        _subastaRepository.AgregarPuja(nuevaPuja);
+                        _billeteraRepository.AgregarMovimientoLedger(
+                            new TransaccionLedger
+                            {
+                                BilleteraId = billeteraAnterior.Id,
+                                Monto = pujaLiderAnterior.Monto,
+                                Tipo = "LIBERACION",
+                                SubastaId = subasta.Id
+                            });
+                    }
+                }
 
-        // ── ACCIÓN 4: chequeo anti-sniping ──────────────────────────────
-        // Si la puja entra dentro de los últimos 60 segundos antes del
-        // cierre, se extienden 2 minutos más (regla del enunciado 2.2).
-        if (subasta.EstaEnVentanaAntiSniping(DateTime.UtcNow))
-        {
-            subasta.ExtenderCierre();
-        }
+                // ACCION 2: Retener los fondos del nuevo postor.
+                billeteraComprador.SaldoRetenido += command.Monto;
+                billeteraComprador.Version++;
 
-        // ── ACCIÓN 5: incrementar el Version de la subasta ──────────────
-        // Igual que con las billeteras: en SQLite el optimistic locking
-        // no es automático, hay que subir el contador a mano.
-        subasta.Version++;
+                _billeteraRepository.AgregarMovimientoLedger(
+                    new TransaccionLedger
+                    {
+                        BilleteraId = billeteraComprador.Id,
+                        Monto = -command.Monto,
+                        Tipo = "RETENCION",
+                        SubastaId = subasta.Id
+                    });
 
-        // ── PERSISTENCIA: guardar todo junto, atómicamente ──────────────
-        // Un solo SaveChangesAsync() para TODOS los cambios acumulados
-        // arriba (liberación, retención, puja nueva, extensión de cierre,
-        // ambos Version). O se guarda todo, o no se guarda nada -> ACID.
+                // ACCION 3: Registrar la nueva puja.
+                var nuevaPuja = new Puja
+                {
+                    SubastaId = subasta.Id,
+                    CompradorId = command.CompradorId,
+                    Monto = command.Monto,
+                    FechaPuja = DateTime.UtcNow
+                };
+
+                _subastaRepository.AgregarPuja(nuevaPuja);
+
+                // ACCION 4: Chequeo Anti-Sniping
+                if (subasta.EstaEnVentanaAntiSniping(DateTime.UtcNow))
+                {
+                    var fechaAnterior = subasta.FechaFin;
+
+                    subasta.ExtenderCierre();
+
+                    _auditoriaLogRepository.Agregar(
+                        new AuditoriaLog
+                        {
+                            Entidad = "SUBASTA",
+                            EntidadId = subasta.Id,
+                            UsuarioId = command.CompradorId,
+                            Accion = "EXTENSION_ANTI_SNIPING",
+                            Fecha = DateTime.UtcNow,
+                            DetalleJson = JsonSerializer.Serialize(
+                                new
+                                {
+                                    fechaAnterior,
+                                    fechaNueva = subasta.FechaFin,
+                                    segundosAgregados = 120
+                                })
+                        });
+                }
+
+                subasta.Version++;    // ACCION 5: Incrementar la Version de la subasta
+
+                return nuevaPuja;
+            });
+
+        return pujaGuardada.Id;
+    }
+
+    private async Task RegistrarPujaRechazadaAsync(
+        RegistrarPujaCommand command,
+        string motivo)
+    {
+        _auditoriaLogRepository.Agregar(
+            new AuditoriaLog
+            {
+                Entidad = "PUJA",
+                EntidadId = command.SubastaId,
+                UsuarioId = command.CompradorId,
+                Accion = "PUJA_RECHAZADA",
+                Fecha = DateTime.UtcNow,
+                DetalleJson = JsonSerializer.Serialize(
+                    new
+                    {
+                        motivo,
+                        monto = command.Monto
+                    })
+            });
+
         await _unitOfWork.SaveChangesAsync();
-
-        // El Id de la puja recién se completa DESPUÉS del SaveChanges
-        // (la base lo autogenera al insertar). Se devuelve para que el
-        // Controller arme la respuesta 201 Created con la ubicación del recurso.
-        return nuevaPuja.Id;
     }
 }

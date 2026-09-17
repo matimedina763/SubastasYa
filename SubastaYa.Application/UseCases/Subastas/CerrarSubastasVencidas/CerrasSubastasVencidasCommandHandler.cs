@@ -1,5 +1,7 @@
 ﻿using SubastaYa.Application.Interfaces.Persistence;
 using SubastaYa.Domain.Entities;
+using SubastaYa.Domain.Exceptions;
+
 
 namespace SubastaYa.Application.UseCases.Subastas.CerrarSubastasVencidas;
 
@@ -27,43 +29,60 @@ public class CerrarSubastasVencidasCommandHandler
         // Trae todas las subastas ACTIVA cuyo FechaFin ya pasó
         var subastasVencidas = await _subastaRepository.ObtenerActivasVencidasAsync(command.Ahora);
 
-        foreach (var subasta in subastasVencidas)
+        return await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            var pujaGanadora = subasta.Pujas.OrderByDescending(p => p.Monto).FirstOrDefault();
-
-            if (pujaGanadora is null)
+            foreach (var subasta in subastasVencidas)
             {
+                var pujaGanadora = subasta.Pujas.OrderByDescending(p => p.Monto).FirstOrDefault();
+
+                if (pujaGanadora is null)
+                {
                 // ── CASO: nadie ofertó -> DESIERTA ──────────────────────
-                subasta.Estado = "DESIERTA";
-                subasta.Version++;
+                    subasta.Estado = "DESIERTA";
+                    subasta.Version++;
 
-                _auditoriaLogRepository.Agregar(new AuditoriaLog
+                    _auditoriaLogRepository.Agregar(
+                        new AuditoriaLog
+                        {
+                            Entidad = "SUBASTA",
+                            EntidadId = subasta.Id,
+                            Accion = "PASE_A_DESIERTA",
+                            Fecha = command.Ahora,
+                            DetalleJson = $"{{\"motivo\":\"sin pujas registradas\"}}"
+                        });
+                    continue;
+                }
+                var billeteraComprador =
+                    await _billeteraRepository
+                        .ObtenerPorUsuarioIdAsync(
+                            pujaGanadora.CompradorId);
+
+                var billeteraVendedor =
+                    await _billeteraRepository
+                        .ObtenerPorUsuarioIdAsync(
+                            subasta.VendedorId);
+
+                if (billeteraComprador is null)
                 {
-                    Entidad = "SUBASTA",
-                    EntidadId = subasta.Id,
-                    Accion = "PASE_A_DESIERTA",
-                    Fecha = command.Ahora,
-                    DetalleJson = $"{{\"motivo\":\"sin pujas registradas\"}}"
-                });
-            }
-            else
-            {
-                // ── CASO: hay ganador -> liquidar y FINALIZAR ───────────
-                var billeteraComprador = await _billeteraRepository.ObtenerPorUsuarioIdAsync(pujaGanadora.CompradorId);
-                var billeteraVendedor = await _billeteraRepository.ObtenerPorUsuarioIdAsync(subasta.VendedorId);
+                    throw new DomainException(
+                        "No se encontró la billetera del comprador ganador.");
+                }
 
-                if (billeteraComprador is not null && billeteraVendedor is not null)
+                if (billeteraVendedor is null)
                 {
-                    // Debitar al comprador: se descuenta de Total y de Retenido a la vez
-                    billeteraComprador.SaldoTotal -= pujaGanadora.Monto;
-                    billeteraComprador.SaldoRetenido -= pujaGanadora.Monto;
-                    billeteraComprador.Version++;
+                    throw new DomainException(
+                        "No se encontró la billetera del vendedor.");
+                }
 
-                    // Acreditar al vendedor
-                    billeteraVendedor.SaldoTotal += pujaGanadora.Monto;
-                    billeteraVendedor.Version++;
+                billeteraComprador.SaldoTotal -= pujaGanadora.Monto;
+                billeteraComprador.SaldoRetenido -= pujaGanadora.Monto;
+                billeteraComprador.Version++;
 
-                    _billeteraRepository.AgregarMovimientoLedger(new TransaccionLedger
+                billeteraVendedor.SaldoTotal += pujaGanadora.Monto;
+                billeteraVendedor.Version++;
+
+                _billeteraRepository.AgregarMovimientoLedger(
+                    new TransaccionLedger
                     {
                         BilleteraId = billeteraComprador.Id,
                         Monto = -pujaGanadora.Monto,
@@ -71,31 +90,31 @@ public class CerrarSubastasVencidasCommandHandler
                         SubastaId = subasta.Id
                     });
 
-                    _billeteraRepository.AgregarMovimientoLedger(new TransaccionLedger
+                _billeteraRepository.AgregarMovimientoLedger(
+                    new TransaccionLedger
                     {
                         BilleteraId = billeteraVendedor.Id,
                         Monto = pujaGanadora.Monto,
                         Tipo = "COBRO",
                         SubastaId = subasta.Id
                     });
-                }
 
                 subasta.Estado = "FINALIZADA";
                 subasta.Version++;
 
-                _auditoriaLogRepository.Agregar(new AuditoriaLog
-                {
-                    Entidad = "SUBASTA",
-                    EntidadId = subasta.Id,
-                    Accion = "CIERRE_WORKER",
-                    Fecha = command.Ahora,
-                    DetalleJson = $"{{\"ganadorId\":{pujaGanadora.CompradorId},\"monto\":{pujaGanadora.Monto}}}"
-                });
+                _auditoriaLogRepository.Agregar(
+                    new AuditoriaLog
+                    {
+                        Entidad = "SUBASTA",
+                        EntidadId = subasta.Id,
+                        Accion = "CIERRE_WORKER",
+                        Fecha = command.Ahora,
+                        DetalleJson = $"{{\"ganadorId\":{pujaGanadora.CompradorId},\"monto\":{pujaGanadora.Monto}}}"
+                    });
             }
-        }
 
-        await _unitOfWork.SaveChangesAsync();
-
-        return subastasVencidas.Count; // cuántas se procesaron, útil para logging
+            return subastasVencidas.Count;    // cuántas se procesaron, útil para logging
+                
+        });
     }
-}
+}    

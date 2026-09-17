@@ -16,4 +16,25 @@ public class UnitOfWork : IUnitOfWork
     {
         return await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation)
+    {
+        await using var transaction =
+            await _dbContext.Database.BeginTransactionAsync();
+
+        try
+        {
+            var result = await operation();
+
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }
