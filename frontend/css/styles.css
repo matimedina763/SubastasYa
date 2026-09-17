@@ -1,118 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 :root {
-    --azul: #001aff;
-    --amarillo: #b3d80e;
-    --rojo: #e01d1d;
-    --fondo: #ffffffc5;
+    --indigo: #1C2340;
+    --indigo-suave: #E8E9F5;
+    --oro: #F0A824;
+    --oro-oscuro: #C9860A;
+    --exito: #1F9D6B;
+    --peligro: #E23D3D;
+    --gris-texto: #4B4E5E;
+    --gris-muted: #8A8D9C;
+    --borde: #E4E6EF;
+    --fondo: #F5F6FA;
 }
 
+* { box-sizing: border-box; }
+
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: var(--fondo);
-    color: #968d8d;
+    color: var(--gris-texto);
     margin: 0;
     padding: 0;
 }
 
-.container, .main {
-    background: white;
-    max-width: 700px;
-    margin: 30px 0 0 0;
-    padding: 30px 0 0 0;
-    border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+h1, h2, h3, .navbar-brand {
+    font-family: 'Sora', sans-serif;
+    color: var(--indigo);
 }
 
-.header, .logo, h1 {
-    text-align: center;
+/* ── Navbar ────────────────────────────────────────────── */
+.navbar-subastaya {
+    background-color: var(--indigo);
+    padding: 0.75rem 1.5rem;
 }
 
-.header h1, h1{
-    margin-bottom: 1rem;
+.navbar-subastaya .navbar-brand {
+    color: white;
     font-weight: 800;
-    font-size: 3rem;
-}   
-
-.slogan, .subtitulo {
-    display: block;
-    color: var(--azul);
-    font-size: 1.2em;
-    font-weight: bold;
-    text-align: center;    
-    margin-bottom: 15px; 
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-hr{opacity: .1; margin: 20px 0 0 0;}
-
-button, .btn{
-    border: none;
-    border-radius: 50px 0 0 0;
-    padding: 10px 20px 0 0;
-    font-weight: 700;
-    font-size: .95rem;
-    cursor: pointer;
-    transition: all .2s ease !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-button:hover, .btn:hover{
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.navbar-subastaya .navbar-brand img {
+    height: 36px;
+    border-radius: 6px;
 }
 
-.subastas h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.card {
-    margin-bottom: 20px;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover{
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.btn-primary {
-    background-color: var(--azul);
-    border: none;
-    border-radius: 2rem;
-    padding: 10px 20px;
+.navbar-subastaya .nav-link {
+    color: #C7C9DC;
     font-weight: 500;
 }
 
-.btn-primary:hover {
-    background-color: #0000cc;
-    transition: background-color 0.3s ease;
+.navbar-subastaya .nav-link:hover,
+.navbar-subastaya .nav-link.active {
+    color: white;
 }
 
-img{
-    display: block;
-    margin: 0 0 10px 0;
+.navbar-subastaya .btn-crear {
+    background-color: var(--oro);
+    color: var(--indigo);
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
 }
 
+.navbar-subastaya .btn-crear:hover {
+    background-color: var(--oro-oscuro);
+}
+
+/* ── Hero (solo index) ────────────────────────────────────*/
+.hero {
+    background-color: var(--indigo-suave);
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.hero p {
+    color: var(--gris-texto);
+    font-size: 1.1rem;
+}
+
+/* ── Contenedor general ───────────────────────────────────*/
+.contenido {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+.contenido h2 {
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Cards de subasta ─────────────────────────────────────*/
+.card {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(28, 35, 64, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(28, 35, 64, 0.12);
+}
+
+.card-title {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    color: var(--indigo);
+}
+
+.oferta-actual {
+    color: var(--oro-oscuro);
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.card.card-cerrada {
+    opacity: 0.85;
+    background-color: #FAFAFC;
+}
+
+/* ── Badges de estado ─────────────────────────────────────*/
+.badge-estado {
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.badge-activa    { background-color: var(--oro); color: var(--indigo); }
+.badge-programada{ background-color: var(--indigo-suave); color: var(--indigo); }
+.badge-finalizada{ background-color: var(--exito); color: white; }
+.badge-desierta   { background-color: var(--gris-muted); color: white; }
+
+/* ── Temporizador ──────────────────────────────────────────*/
 .temporizador {
-    font-weight: bold;
-    color: #333;
+    font-weight: 600;
+    color: var(--gris-texto);
+    font-size: 0.95rem;
 }
 
 .temporizador-critico {
     color: white;
-    background-color: var(--rojo);
-    padding: 4px 8px;
+    background-color: var(--peligro);
+    padding: 4px 10px;
     border-radius: 6px;
+    display: inline-block;
     animation: parpadeo 1s infinite;
 }
 
 @keyframes parpadeo {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.55; }
+}
+
+/* ── Botones ───────────────────────────────────────────────*/
+.btn-primary {
+    background-color: var(--indigo);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #12162c;
+}
+
+.btn-oro {
+    background-color: var(--oro);
+    color: var(--indigo);
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.btn-oro:hover {
+    background-color: var(--oro-oscuro);
+    color: white;
+}
+
+/* ── Tablas (Mis Subastas / Billetera) ───────────────────*/
+.table thead {
+    background-color: var(--indigo-suave);
+}
+
+.table th {
+    color: var(--indigo);
+    font-weight: 600;
+    border: none;
+}
+
+/* ── Saldos de Billetera ──────────────────────────────────*/
+.card-saldo .card-body {
+    text-align: center;
+}
+
+.card-saldo h3 {
+    font-size: 0.95rem;
+    color: var(--gris-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.card-saldo p {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--indigo);
+    margin: 0;
+}
+
+.card-saldo.disponible p {
+    color: var(--oro-oscuro);
 }

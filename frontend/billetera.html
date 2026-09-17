@@ -10,13 +10,22 @@
 <body class="billetera-page">
     <div class="container py-4">
 
-        <header class="header text-center mb-4">
-            <img class="logo" src="assets/img/logo.jpeg" alt="SubastaYa" style="max-height: 80px;">
-            <h1>Mi Billetera Virtual</h1>
-            <a href="index.html" class="btn btn-secondary mb-3">← Volver al catálogo</a>
+        <nav class="navbar navbar-subastaya navbar-expand-md">
+            <div class="container-fluid px-3">
+                <a class="navbar-brand" href="index.html">
+                    <img src="assets/img/logo.jpeg" alt="SubastaYa">
+                    SubastaYa
+                </a>
+                <div class="d-flex gap-3 align-items-center">
+                    <a class="nav-link" href="mis_subastas.html">Mis subastas</a>
+                    <a class="nav-link" href="billetera.html">Mi billetera</a>
+                    <a class="btn-crear" href="subasta.html">Crear subasta</a>
+                </div>
+            </div>
+        </nav>
 
             <div class="mb-3">
-                <label class="form-label">¿Quién sos?</label>
+                <label class="form-label text-center">¿Quién sos?</label>
                 <select id="selectUsuario" class="form-select w-auto mx-auto">
                     <option value="1">Vendedor</option>
                     <option value="2">Comprador 1</option>
@@ -24,7 +33,6 @@
                     <option value="4">Sin Fondos</option>
                 </select>
             </div>
-        </header>
         
         <!-- Resumen de saldos -->
         <section class="mb-4">
@@ -34,9 +42,9 @@
 
                 <!-- Saldo total -->
                 <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm card-saldo">
                         <div class="card-body text-center">
-                            <h3 class="h5">TOTAL</h3>
+                            <h3>Total</h3>
                             <p id="saldoTotal" class="fs-3 fw-bold">$0,00</p>
                         </div>
                     </div>
@@ -44,9 +52,9 @@
 
                 <!-- Saldo retenido -->
                 <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm card-saldo">
                         <div class="card-body text-center">
-                            <h3 class="h5">RETENIDO</h3>
+                            <h3>Retenido</h3>
                             <p id="saldoRetenido" class="fs-3 fw-bold">$0,00</p>
                         </div>
                     </div>
@@ -54,9 +62,9 @@
 
                 <!-- Saldo disponible -->
                 <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm card-saldo disponible">
                         <div class="card-body text-center">
-                            <h3 class="h5">DISPONIBLE</h3>
+                            <h3>Disponible</h3>
                             <p id="saldoDisponible" class="fs-3 fw-bold">$0,00</p>
                         </div>
                     </div>
@@ -85,7 +93,6 @@
                 </div>
             </form>    
                         
-            <div id="mensajeDeposito" class="mt-3"></div>                    
         </section>
 
         <!-- Historial de movimientos -->

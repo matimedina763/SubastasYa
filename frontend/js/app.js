@@ -24,8 +24,7 @@ async function cargarSubastasActivas() {
                         <h5 class="card-title">${subasta.titulo}</h5>
                         <p class="card-text">${subasta.descripcion}</p>
                         <p class="card-text">Precio inicial: $${subasta.precioInicial}</p>
-                        <p class="card-text"><strong>Oferta actual: $${subasta.ofertaActual}</strong></p>
-                        <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
+                        <p class="oferta-actual">Oferta actual: $${subasta.ofertaActual}</p>                        <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
                         <p class="card-text temporizador" data-fecha-fin="${subasta.fechaFin}">--:--</p>
                         <button class="btn btn-primary w-100" onclick="abrirModalPuja(${subasta.id})">Pujar</button>
                     </div>
@@ -42,7 +41,6 @@ async function cargarSubastasActivas() {
 
 async function cargarSubastasCerradas() {
     try {
-        // Traemos las dos categorías por separado y las combinamos
         const [resFinalizadas, resDesiertas] = await Promise.all([
             fetch(`${API_URL}/subastas?estado=FINALIZADA`),
             fetch(`${API_URL}/subastas?estado=DESIERTA`)
@@ -58,19 +56,24 @@ async function cargarSubastasCerradas() {
             return;
         }
 
-        listaCerradas.innerHTML = cerradas.map(subasta => `
-            <div class="col-md-4 mb-3">
-                <div class="card border-secondary">
-                    <div class="card-body">
-                        <h5 class="card-title text-muted">${subasta.titulo}</h5>
-                        <p class="card-text">${subasta.descripcion}</p>
-                        <p class="card-text">Oferta final: $${subasta.ofertaActual}</p>
-                        <p class="card-text">${subasta.liderNombre ? `Ganador: <strong>${subasta.liderNombre}</strong>` : "Sin ganador"}</p>
-                        <span class="badge ${subasta.estado === 'FINALIZADA' ? 'bg-success' : 'bg-secondary'}">${subasta.estado}</span>
+        listaCerradas.innerHTML = cerradas.map(subasta => {
+            const claseBadge = subasta.estado === 'FINALIZADA' ? 'badge-finalizada' : 'badge-desierta';
+            const textoBadge = subasta.estado === 'FINALIZADA' ? 'Finalizada' : 'Desierta';
+
+            return `
+                <div class="col-md-4 mb-3">
+                    <div class="card card-cerrada">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">${subasta.titulo}</h5>
+                            <p class="card-text">${subasta.descripcion}</p>
+                            <p class="card-text">Oferta final: $${subasta.ofertaActual}</p>
+                            <p class="card-text">${subasta.liderNombre ? `Ganador: <strong>${subasta.liderNombre}</strong>` : "Sin ganador"}</p>
+                            <span class="badge-estado ${claseBadge}">${textoBadge}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join("");
+            `;
+        }).join("");
     } catch (error) {
         console.error("Error al cargar las subastas cerradas:", error);
     }
@@ -129,7 +132,6 @@ async function confirmarPuja() {
 }
 
 function iniciarTemporizadores() {
-    // Se ejecuta una vez por segundo, actualizando TODOS los temporizadores en pantalla
     setInterval(() => {
         document.querySelectorAll(".temporizador").forEach(el => {
             const fechaFin = new Date(el.dataset.fechaFin);
@@ -142,10 +144,8 @@ function iniciarTemporizadores() {
                 return;
             }
 
-            const minutos = Math.floor(diferenciaMs / 60000);
-            const segundos = Math.floor((diferenciaMs % 60000) / 1000);
-                el.textContent = `⏱ ${formatearTiempo(diferenciaMs)}`;
-            // Zona crítica: último minuto -> cambia de color (regla anti-sniping visual)
+            el.textContent = `⏱ ${formatearTiempo(diferenciaMs)}`;
+
             if (diferenciaMs <= 60000) {
                 el.classList.add("temporizador-critico");
             } else {
