@@ -282,7 +282,9 @@ cargarSubastas(); // primera carga, apenas entra a la página
 
 setInterval(() => {
     const modalAbierto = document.getElementById("modalPujar").classList.contains("show");
-    if (!modalAbierto) {
-        cargarSubastas();
+    if (modalAbierto) {
+        consultarEstadoPuja(); // actualiza SOLO el indicador de liderando/superado
+    } else {
+        cargarSubastas(); // actualiza el catálogo cuando el modal está cerrado
     }
 }, 3000);

@@ -6,16 +6,35 @@ document.getElementById("formCrearSubasta").addEventListener("submit", async fun
     const btnSubmit = document.querySelector("#formCrearSubasta button[type='submit']");
     const textoOriginal = btnSubmit.innerHTML;
 
+    const precioBase = parseFloat(document.getElementById("precioBase").value);
+    const incrementoMinimo = parseFloat(document.getElementById("incrementoMinimo").value);
+    const fechaInicio = new Date(document.getElementById("fechaInicio").value);
+    const fechaFin = new Date(document.getElementById("fechaFin").value);
+
+    // Validaciones en pantalla, ANTES de tocar el backend (evita peticiones innecesarias)
+    if (precioBase <= 0) {
+        mostrarToast("El precio base debe ser un valor positivo.", "error");
+        return;
+    }
+    if (incrementoMinimo <= 0) {
+        mostrarToast("El incremento mínimo debe ser un valor positivo.", "error");
+        return;
+    }
+    if (fechaFin <= fechaInicio) {
+        mostrarToast("La fecha de fin debe ser posterior a la de inicio.", "error");
+        return;
+    }
+
     const body = {
         vendedorId: parseInt(document.getElementById("vendedorId").value),
         titulo: document.getElementById("titulo").value,
         descripcion: document.getElementById("descripcion").value,
         urlImagen: document.getElementById("urlImagen").value,
         categoriaId: parseInt(document.getElementById("categoriaId").value),
-        precioBase: parseFloat(document.getElementById("precioBase").value),
-        incrementoMinimo: parseFloat(document.getElementById("incrementoMinimo").value),
-        fechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString(),
-        fechaFin: new Date(document.getElementById("fechaFin").value).toISOString()
+        precioBase: precioBase,
+        incrementoMinimo: incrementoMinimo,
+        fechaInicio: fechaInicio.toISOString(),
+        fechaFin: fechaFin.toISOString()
     };
 
     btnSubmit.disabled = true;
