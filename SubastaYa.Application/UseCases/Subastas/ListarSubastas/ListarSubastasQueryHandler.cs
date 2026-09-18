@@ -30,7 +30,7 @@ public class ListarSubastasQueryHandler
                 Categoria = subasta.Categoria?.Nombre,
                 PrecioInicial = subasta.PrecioBase,
                 OfertaActual = subasta.OfertaActual(),
-                CantidadOfertas = subastaa.Pujas.Count,
+                CantidadOfertas = subasta.Pujas.Count,
                 FechaInicio = subasta.FechaInicio,
                 FechaFin = subasta.FechaFin,
                 Activa = subasta.Estado == "ACTIVA",

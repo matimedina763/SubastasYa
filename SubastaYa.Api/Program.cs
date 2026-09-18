@@ -28,8 +28,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();                     // Habilita que .NET pueda describir los endpoints de la API (necesario para que Swagger los detecte)
 builder.Services.AddSwaggerGen();                                // Genera automáticamente la documentación OpenAPI/Swagger de todos los endpoints
 builder.Services.AddControllers();                               // Habilita el uso de Controllers (busca clases con [ApiController] y las conecta a las rutas HTTP)
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddPooledDbContextFactory<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<AppDbContext>(sp =>
+    sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
 
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();       // Cuando alguien pida ISubastaRepository, dale una instancia real de SubastaRepository (implementación con EF Core)
 builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();   // Ídem, para las consultas/movimientos de billeteras
