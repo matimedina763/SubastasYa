@@ -24,11 +24,9 @@ public class RegistrarPujaCommandHandler
         _auditoriaLogRepository = auditoriaLogRepository;
     }
 
-    public async Task<int> Handle(RegistrarPujaCommand command)
+    public async Task<RegistrarPujaResultado> Handle(RegistrarPujaCommand command)
     {
         // - VALIDACION 1: ¿Existe la subasta? -
-        // Si no existe, no tiene sentido seguir evaluando nada más.
-        // Se corta acá con una excepción específica -->  El middleware la traduce a 404.
         var subasta =
             await _subastaRepository.ObtenerSubastaPorIdAsync(
                 command.SubastaId);
@@ -43,8 +41,6 @@ public class RegistrarPujaCommandHandler
         }
 
         // -- VALIDACION 2: ¿ESTA ACTIVA? ---------
-        // No se puede pujar en una subasta ya PROGRAMADA
-        // ni en una FINALIZADA/DESIERTA ----> 400 vía DomainException
         if (subasta.Estado != "ACTIVA")
         {
             await RegistrarPujaRechazadaAsync(
@@ -66,9 +62,6 @@ public class RegistrarPujaCommandHandler
         }
 
         // --- VALIDACION 3: ¿El monto alcanza? ---
-        // Usa la regla de negocio que vive en la propia entidad Subasta
-        // (oferta actual + incremento mínimo).  No se recalcula acá,
-        // se delega a la entidad Rich Domain Model.
         if (!subasta.EsPujaValida(command.Monto))
         {
             await RegistrarPujaRechazadaAsync(
@@ -81,9 +74,6 @@ public class RegistrarPujaCommandHandler
         }
 
         // --- VALIDACION 4: ¿El comprador tiene billetera? ---
-        // Caso borde: no debería pasar en la practica (todo usuario tiene
-        // billetera por diseño), pero se chequea para no explotar con
-        // un NullRefenceException.
         var billeteraComprador =
             await _billeteraRepository.ObtenerPorUsuarioIdAsync(
                 command.CompradorId);
@@ -99,9 +89,6 @@ public class RegistrarPujaCommandHandler
         }
 
         // --- VALIDACION 5: ¿Tiene fondos suficientes? --
-        // Compara contra SaldoDisponible (= SaldoTotal - SaldoRetenido),
-        // NUNCA contra SaldoTotal directo --> es la esencia del escrow:
-        // la plata ya comprometida en otra subasta no cuenta como disponible.
         if (billeteraComprador.SaldoDisponible < command.Monto)
         {
             await RegistrarPujaRechazadaAsync(
@@ -112,7 +99,7 @@ public class RegistrarPujaCommandHandler
         }
 
         // ACCION 1 - Liberar la retención del postor anterior
-        var pujaGuardada =
+        var resultado =
             await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
                 var pujaLiderAnterior = subasta.Pujas
@@ -169,11 +156,14 @@ public class RegistrarPujaCommandHandler
                 _subastaRepository.AgregarPuja(nuevaPuja);
 
                 // ACCION 4: Chequeo Anti-Sniping
+                bool seExtendio = false;
+
                 if (subasta.EstaEnVentanaAntiSniping(DateTime.UtcNow))
                 {
                     var fechaAnterior = subasta.FechaFin;
 
                     subasta.ExtenderCierre();
+                    seExtendio = true;
 
                     _auditoriaLogRepository.Agregar(
                         new AuditoriaLog
@@ -195,10 +185,15 @@ public class RegistrarPujaCommandHandler
 
                 subasta.Version++;    // ACCION 5: Incrementar la Version de la subasta
 
-                return nuevaPuja;
+                return new RegistrarPujaResultado
+                {
+                    PujaId = nuevaPuja.Id,
+                    SubastaExtendida = seExtendio,
+                    NuevaFechaFin = subasta.FechaFin
+                };
             });
 
-        return pujaGuardada.Id;
+        return resultado;
     }
 
     private async Task RegistrarPujaRechazadaAsync(

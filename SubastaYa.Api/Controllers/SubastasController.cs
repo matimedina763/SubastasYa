@@ -45,8 +45,8 @@ namespace SubastaYa.Api.Controllers
         public async Task<IActionResult> RegistrarPuja(int id, [FromBody] RegistrarPujaRequest request)
         {
             var command = new RegistrarPujaCommand(id, request.CompradorId, request.Monto);
-            var pujaId = await _registrarPujaHandler.Handle(command);
-            return CreatedAtAction(nameof(ObtenerPorId), new { id }, new { pujaId });
+            var resultado = await _registrarPujaHandler.Handle(command);
+            return CreatedAtAction(nameof(ObtenerPorId), new { id }, resultado);
         }
 
         [HttpGet]

@@ -7,7 +7,6 @@ async function cargarSubastas() {
     await cargarSubastasCerradas();
 }
 
-
 async function cargarSubastasActivas() {
     try {
         const categoria = document.getElementById("filtroCategoria").value;
@@ -15,7 +14,6 @@ async function cargarSubastasActivas() {
         const precioMax = document.getElementById("filtroPrecioMax").value;
         const orden = document.getElementById("filtroOrden").value;
 
-        // Armamos la URL solo con los filtros que el usuario cargó (los vacíos no se agregan)
         const params = new URLSearchParams({ estado: "ACTIVA" });
         if (categoria) params.append("categoriaId", categoria);
         if (precioMin) params.append("precioMin", precioMin);
@@ -57,7 +55,35 @@ async function cargarSubastasActivas() {
     }
 }
 
-document.getElementById("btnAplicarFiltros").addEventListener("click", cargarSubastasActivas);
+async function cargarSubastasProximas() {
+    try {
+        const res = await fetch(`${API_URL}/subastas?estado=PROGRAMADA`);
+        const subastas = await res.json();
+        const lista = document.getElementById("listaProximas");
+
+        if (subastas.length === 0) {
+            lista.innerHTML = "<p class='text-muted'>No hay subastas próximas por el momento.</p>";
+            return;
+        }
+
+        lista.innerHTML = subastas.map(subasta => `
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    ${subasta.urlImagen ? `<img src="${subasta.urlImagen}" class="card-img-top" style="height:180px; object-fit:cover;" alt="${subasta.titulo}">` : ''}
+                    <div class="card-body">
+                        <h5 class="card-title">${subasta.titulo}</h5>
+                        <p class="card-text">${subasta.descripcion}</p>
+                        <p class="card-text">Precio base: $${subasta.precioInicial}</p>
+                        <p class="card-text">Comienza: ${new Date(subasta.fechaInicio).toLocaleString()}</p>
+                        <span class="badge-estado badge-programada">Próximamente</span>
+                    </div>
+                </div>
+            </div>
+        `).join("");
+    } catch (error) {
+        console.error("Error al cargar las subastas próximas:", error);
+    }
+}
 
 async function cargarSubastasCerradas() {
     try {
@@ -100,17 +126,36 @@ async function cargarSubastasCerradas() {
     }
 }
 
+async function cargarHistorialPujas() {
+    const contenedor = document.getElementById("historialPujas");
+    try {
+        const res = await fetch(`${API_URL}/subastas/${subastaSeleccionadaId}/pujas`);
+        const pujas = await res.json();
+
+        if (pujas.length === 0) {
+            contenedor.innerHTML = "<p class='text-muted small'>Todavía no hay ofertas.</p>";
+            return;
+        }
+
+        contenedor.innerHTML = pujas.reverse().map(p => `
+            <div class="small border-bottom py-1">
+                <strong>${p.postor}</strong> ofertó $${p.monto} — ${new Date(p.fechaPuja).toLocaleTimeString()}
+            </div>
+        `).join("");
+    } catch (error) {
+        contenedor.innerHTML = "";
+    }
+}
+
 // Se abre cuando clickeás "Pujar" en cualquier card
 function abrirModalPuja(subastaId) {
     subastaSeleccionadaId = subastaId;
-    document.getElementById("inputMonto").value = "";
 
     const modal = new bootstrap.Modal(document.getElementById("modalPujar"));
     modal.show();
 
-    consultarEstadoPuja(); // consulta con el usuario que esté seleccionado por defecto
-    cargarHistorialPujas(); // ← nuevo
-
+    consultarEstadoPuja(); // también autocompleta el monto sugerido
+    cargarHistorialPujas();
 }
 
 document.getElementById("selectComprador").addEventListener("change", consultarEstadoPuja);
@@ -126,7 +171,6 @@ async function confirmarPuja() {
         return;
     }
 
-    // Spinner: deshabilitar el botón y mostrar estado de carga
     const textoOriginal = btnConfirmar.innerHTML;
     btnConfirmar.disabled = true;
     btnConfirmar.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Procesando...`;
@@ -144,14 +188,22 @@ async function confirmarPuja() {
             return;
         }
 
+        const resultado = await res.json();
+
         bootstrap.Modal.getInstance(document.getElementById("modalPujar")).hide();
         mostrarToast("¡Puja registrada con éxito!", "exito");
+
+        if (resultado.subastaExtendida) {
+            setTimeout(() => {
+                mostrarToast("⏱️ ¡La subasta se extendió 2 minutos por regla anti-sniping!", "exito");
+            }, 500);
+        }
+
         cargarSubastas();
 
     } catch (error) {
         mostrarToast("No se pudo conectar con el servidor.", "error");
     } finally {
-        // Se ejecuta siempre, haya éxito o error -> el botón vuelve a su estado normal
         btnConfirmar.disabled = false;
         btnConfirmar.innerHTML = textoOriginal;
     }
@@ -192,7 +244,7 @@ function formatearTiempo(diferenciaMs) {
     if (dias > 0) partes.push(`${dias}d`);
     if (dias > 0 || horas > 0) partes.push(`${horas}h`);
     if (dias > 0 || horas > 0 || minutos > 0) partes.push(`${minutos}m`);
-    partes.push(`${segundos.toString().padStart(2, "0")}s`); // los segundos siempre se muestran
+    partes.push(`${segundos.toString().padStart(2, "0")}s`);
 
     return partes.join(" ");
 }
@@ -216,64 +268,17 @@ async function consultarEstadoPuja() {
             infoDiv.className = "alert alert-info mb-3";
             infoDiv.textContent = `Oferta actual: $${estado.ofertaActual}. Próxima oferta mínima: $${estado.proximaOferta}`;
         }
+
+        document.getElementById("inputMonto").value = estado.proximaOferta;
     } catch (error) {
         infoDiv.classList.add("d-none");
     }
 }
 
-async function cargarHistorialPujas() {
-    const contenedor = document.getElementById("historialPujas");
-    try {
-        const res = await fetch(`${API_URL}/subastas/${subastaSeleccionadaId}/pujas`);
-        const pujas = await res.json();
-
-        if (pujas.length === 0) {
-            contenedor.innerHTML = "<p class='text-muted small'>Todavía no hay ofertas.</p>";
-            return;
-        }
-
-        contenedor.innerHTML = pujas.reverse().map(p => `
-            <div class="small border-bottom py-1">
-                <strong>${p.postor}</strong> ofertó $${p.monto} — ${new Date(p.fechaPuja).toLocaleTimeString()}
-            </div>
-        `).join("");
-    } catch (error) {
-        contenedor.innerHTML = "";
-    }
-}
-async function cargarSubastasProximas() {
-    try {
-        const res = await fetch(`${API_URL}/subastas?estado=PROGRAMADA`);
-        const subastas = await res.json();
-        const lista = document.getElementById("listaProximas");
-
-        if (subastas.length === 0) {
-            lista.innerHTML = "<p class='text-muted'>No hay subastas próximas por el momento.</p>";
-            return;
-        }
-
-        lista.innerHTML = subastas.map(subasta => `
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    ${subasta.urlImagen ? `<img src="${subasta.urlImagen}" class="card-img-top" style="height:180px; object-fit:cover;" alt="${subasta.titulo}">` : ''}
-                    <div class="card-body">
-                        <h5 class="card-title">${subasta.titulo}</h5>
-                        <p class="card-text">${subasta.descripcion}</p>
-                        <p class="card-text">Precio base: $${subasta.precioInicial}</p>
-                        <p class="card-text">Comienza: ${new Date(subasta.fechaInicio).toLocaleString()}</p>
-                        <span class="badge-estado badge-programada">Próximamente</span>
-                    </div>
-                </div>
-            </div>
-        `).join("");
-    } catch (error) {
-        console.error("Error al cargar las subastas próximas:", error);
-    }
-}
-
 document.getElementById("btnConfirmarPuja").addEventListener("click", confirmarPuja);
+document.getElementById("btnAplicarFiltros").addEventListener("click", cargarSubastasActivas);
 
-cargarSubastas();
+cargarSubastas(); // primera carga, apenas entra a la página
 
 setInterval(() => {
     const modalAbierto = document.getElementById("modalPujar").classList.contains("show");

@@ -36,8 +36,8 @@ public class RegistrarPujaCommandHandlerTests
         var auditoriaLogRepo = Substitute.For<IAuditoriaLogRepository>();
         var unitOfWork = Substitute.For<IUnitOfWork>();
 
-        unitOfWork.ExecuteInTransactionAsync<Puja>(Arg.Any<Func<Task<Puja>>>())
-            .Returns(callInfo => callInfo.Arg<Func<Task<Puja>>>()());
+        unitOfWork.ExecuteInTransactionAsync<RegistrarPujaResultado>(Arg.Any<Func<Task<RegistrarPujaResultado>>>())
+            .Returns(callInfo => callInfo.Arg<Func<Task<RegistrarPujaResultado>>>()());
 
         var subasta = CrearSubastaBase();
         var billetera = CrearBilleteraBase();
@@ -126,8 +126,8 @@ public class RegistrarPujaCommandHandlerTests
         var auditoriaLogRepo = Substitute.For<IAuditoriaLogRepository>();
         var unitOfWork = Substitute.For<IUnitOfWork>();
 
-        unitOfWork.ExecuteInTransactionAsync<Puja>(Arg.Any<Func<Task<Puja>>>())
-            .Returns(callInfo => callInfo.Arg<Func<Task<Puja>>>()());
+        unitOfWork.ExecuteInTransactionAsync<RegistrarPujaResultado>(Arg.Any<Func<Task<RegistrarPujaResultado>>>())
+            .Returns(callInfo => callInfo.Arg<Func<Task<RegistrarPujaResultado>>>()());
 
         var subasta = CrearSubastaBase();
         subasta.FechaFin = DateTime.UtcNow.AddSeconds(30);
@@ -139,8 +139,9 @@ public class RegistrarPujaCommandHandlerTests
         var handler = new RegistrarPujaCommandHandler(subastaRepo, billeteraRepo, unitOfWork, auditoriaLogRepo);
         var comando = new RegistrarPujaCommand(1, 2, 1100);
 
-        await handler.Handle(comando);
+        var resultado = await handler.Handle(comando);
 
         Assert.True(subasta.FechaFin > fechaFinOriginal);
+        Assert.True(resultado.SubastaExtendida); // bonus: confirma también el flag nuevo
     }
 }
