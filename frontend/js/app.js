@@ -3,17 +3,31 @@ let subastaSeleccionadaId = null; // guardamos acá el id de la subasta que se e
 
 async function cargarSubastas() {
     await cargarSubastasActivas();
+    await cargarSubastasProximas();
     await cargarSubastasCerradas();
 }
 
+
 async function cargarSubastasActivas() {
     try {
-        const res = await fetch(`${API_URL}/subastas?estado=ACTIVA`);
+        const categoria = document.getElementById("filtroCategoria").value;
+        const precioMin = document.getElementById("filtroPrecioMin").value;
+        const precioMax = document.getElementById("filtroPrecioMax").value;
+        const orden = document.getElementById("filtroOrden").value;
+
+        // Armamos la URL solo con los filtros que el usuario cargó (los vacíos no se agregan)
+        const params = new URLSearchParams({ estado: "ACTIVA" });
+        if (categoria) params.append("categoriaId", categoria);
+        if (precioMin) params.append("precioMin", precioMin);
+        if (precioMax) params.append("precioMax", precioMax);
+        if (orden) params.append("ordenarPor", orden);
+
+        const res = await fetch(`${API_URL}/subastas?${params.toString()}`);
         const subastas = await res.json();
         const lista = document.getElementById("lista");
 
         if (subastas.length === 0) {
-            lista.innerHTML = "<p class='text-muted'>No hay subastas activas en este momento.</p>";
+            lista.innerHTML = "<p class='text-muted'>No hay subastas que coincidan con los filtros.</p>";
             return;
         }
 
@@ -42,6 +56,8 @@ async function cargarSubastasActivas() {
         document.getElementById("lista").innerHTML = "<p class='text-danger'>Error al cargar las subastas.</p>";
     }
 }
+
+document.getElementById("btnAplicarFiltros").addEventListener("click", cargarSubastasActivas);
 
 async function cargarSubastasCerradas() {
     try {
@@ -225,7 +241,43 @@ async function cargarHistorialPujas() {
         contenedor.innerHTML = "";
     }
 }
+async function cargarSubastasProximas() {
+    try {
+        const res = await fetch(`${API_URL}/subastas?estado=PROGRAMADA`);
+        const subastas = await res.json();
+        const lista = document.getElementById("listaProximas");
+
+        if (subastas.length === 0) {
+            lista.innerHTML = "<p class='text-muted'>No hay subastas próximas por el momento.</p>";
+            return;
+        }
+
+        lista.innerHTML = subastas.map(subasta => `
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    ${subasta.urlImagen ? `<img src="${subasta.urlImagen}" class="card-img-top" style="height:180px; object-fit:cover;" alt="${subasta.titulo}">` : ''}
+                    <div class="card-body">
+                        <h5 class="card-title">${subasta.titulo}</h5>
+                        <p class="card-text">${subasta.descripcion}</p>
+                        <p class="card-text">Precio base: $${subasta.precioInicial}</p>
+                        <p class="card-text">Comienza: ${new Date(subasta.fechaInicio).toLocaleString()}</p>
+                        <span class="badge-estado badge-programada">Próximamente</span>
+                    </div>
+                </div>
+            </div>
+        `).join("");
+    } catch (error) {
+        console.error("Error al cargar las subastas próximas:", error);
+    }
+}
 
 document.getElementById("btnConfirmarPuja").addEventListener("click", confirmarPuja);
 
 cargarSubastas();
+
+setInterval(() => {
+    const modalAbierto = document.getElementById("modalPujar").classList.contains("show");
+    if (!modalAbierto) {
+        cargarSubastas();
+    }
+}, 3000);
