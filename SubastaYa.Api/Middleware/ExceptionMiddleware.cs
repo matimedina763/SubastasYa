@@ -1,6 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using SubastaYa.Application.Interfaces.Persistence;
 using SubastaYa.Domain.Exceptions;
+using SubastaYa.Infrastructure.Services;
+
+
 
 namespace SubastaYa.Api.Middleware;
 
@@ -13,7 +17,7 @@ public class ExceptionMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IConcurrencyAuditWriter concurrencyAuditWriter)
     {
         try
         {
@@ -33,6 +37,10 @@ public class ExceptionMiddleware
         }
         catch (DbUpdateConcurrencyException)
         {
+            await concurrencyAuditWriter.RegistrarAsync(
+                context.Request.Path,
+                context.Request.Method);
+
             await EscribirRespuesta(context, StatusCodes.Status409Conflict,
                 "La subasta fue modificada por otra operación concurrente. Intentá nuevamente.");
         }

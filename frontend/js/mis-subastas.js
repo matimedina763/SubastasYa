@@ -22,12 +22,12 @@ async function cargarMisPujas(usuarioId) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${pujas.map(p => `
+                    ${pujas.map(pujas => `
                         <tr>
-                            <td>${p.tituloSubasta}</td>
-                            <td>$${p.miUltimaOferta}</td>
-                            <td>${p.estadoSubasta}</td>
-                            <td>${p.soyElLider ? "✅ Sí" : "❌ No"}</td>
+                            <td>${pujas.tituloSubasta}</td>
+                            <td>$${pujas.miUltimaOferta}</td>
+                            <td>${pujas.estadoSubasta}</td>
+                            <td>${pujas.soyElLider ? "✅ Sí" : "❌ No"}</td>
                         </tr>
                     `).join("")}
                 </tbody>

@@ -11,8 +11,11 @@ using SubastaYa.Application.UseCases.Subastas.MisPublicaciones;
 using SubastaYa.Application.UseCases.Subastas.MisPujas;
 using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;  // AGREGUE: EL NAMESPACE DE ObtenerSubastaHandler
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
+using SubastaYa.Application.UseCases.Subastas.HistorialPujas;
+using SubastaYa.Application.UseCases.Subastas.EstadoPuja;
 using SubastaYa.Infrastructure.Data;
 using SubastaYa.Infrastructure.Repositories;
+using SubastaYa.Infrastructure.Services;
 using SubastaYa.Infrastructure.Workers;
 
 
@@ -25,7 +28,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();                     // Habilita que .NET pueda describir los endpoints de la API (necesario para que Swagger los detecte)
 builder.Services.AddSwaggerGen();                                // Genera automáticamente la documentación OpenAPI/Swagger de todos los endpoints
 builder.Services.AddControllers();                               // Habilita el uso de Controllers (busca clases con [ApiController] y las conecta a las rutas HTTP)
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddPooledDbContextFactory<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));   // Primero usa el contexto, luego que use el motor SQLite y en GetConnectionStrings que busque la dirección en appsettings.json
 
 builder.Services.AddScoped<ISubastaRepository, SubastaRepository>();       // Cuando alguien pida ISubastaRepository, dale una instancia real de SubastaRepository (implementación con EF Core)
 builder.Services.AddScoped<IBilleteraRepository, BilleteraRepository>();   // Ídem, para las consultas/movimientos de billeteras
@@ -48,6 +52,11 @@ builder.Services.AddScoped<ObtenerMovimientosQueryHandler>();    // Registra el 
 
 builder.Services.AddScoped<MisPujasQueryHandler>();            // Registra el Handler que trae las subastas donde un usuario pujó, indicando su última oferta, si va liderando y el estado de cada subasta
 builder.Services.AddScoped<MisPublicacionesQueryHandler>();    // Registra el Handler que trae las subastas publicadas por un vendedor, con cantidad de pujas y monto recaudado si ya se vendió
+
+builder.Services.AddScoped<IConcurrencyAuditWriter, ConcurrencyAuditWriter>();  // Registra la auditoria del conflicto de concurrencia 409
+
+builder.Services.AddScoped<HistorialPujasQueryHandler>();      // Registra el handler que trae el historial de pujas al contenedor de dependencias
+builder.Services.AddScoped<EstadoPujaQueryHandler>();          
 
 builder.Services.AddCors(options =>
 {

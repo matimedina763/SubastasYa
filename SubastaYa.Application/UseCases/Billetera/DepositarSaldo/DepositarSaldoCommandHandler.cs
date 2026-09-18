@@ -35,16 +35,16 @@ public class DepositarSaldoCommandHandler
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             billetera.SaldoTotal += command.Monto;
-            billetera.Version++;
+            billetera.Version++;        // Esta operación guarda el incremento de Version
 
-            _billeteraRepository.AgregarMovimientoLedger(
+            _billeteraRepository.AgregarMovimientoLedger(     // Se deposita todo en el Ledger
                 new TransaccionLedger
                 {
                     BilleteraId = billetera.Id,
                     Monto = command.Monto,
                     Tipo = "DEPOSITO"
                 });
-            _auditoriaLogRepository.Agregar(
+            _auditoriaLogRepository.Agregar(                  // Se acredita manualmente en Auditoría
                 new AuditoriaLog
                 {
                     Entidad = "BILLETERA",

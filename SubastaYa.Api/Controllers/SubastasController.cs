@@ -3,6 +3,8 @@ using SubastaYa.Application.UseCases.Subastas.ObtenerSubasta;
 using SubastaYa.Application.UseCases.Subastas.RegistrarPuja;
 using SubastaYa.Application.UseCases.Subastas.ListarSubastas;
 using SubastaYa.Application.UseCases.Subastas.CrearSubasta;
+using SubastaYa.Application.UseCases.Subastas.HistorialPujas;
+using SubastaYa.Application.UseCases.Subastas.EstadoPuja;
 
 namespace SubastaYa.Api.Controllers
 {
@@ -14,16 +16,22 @@ namespace SubastaYa.Api.Controllers
         private readonly RegistrarPujaCommandHandler _registrarPujaHandler;
         private readonly ListarSubastasQueryHandler _listarSubastasHandler;
         private readonly CrearSubastaCommandHandler _crearSubastaHandler;
+        private readonly HistorialPujasQueryHandler _historialPujasHandler;
+        private readonly EstadoPujaQueryHandler _estadoPujaHandler;
         public SubastasController(
             ObtenerSubastaHandler obtenerSubastaHandler,
             RegistrarPujaCommandHandler registrarPujaHandler,
             ListarSubastasQueryHandler listarSubastasHandler,
-            CrearSubastaCommandHandler crearSubastaHandler)
+            CrearSubastaCommandHandler crearSubastaHandler,
+            HistorialPujasQueryHandler historialPujasQueryHandler,
+            EstadoPujaQueryHandler estadoPujaQueryHandler)
         {
             _obtenerSubastaHandler = obtenerSubastaHandler;
             _registrarPujaHandler = registrarPujaHandler;
             _listarSubastasHandler = listarSubastasHandler;
             _crearSubastaHandler = crearSubastaHandler;
+            _historialPujasHandler = historialPujasQueryHandler;
+            _estadoPujaHandler = estadoPujaQueryHandler;
         }
 
         [HttpGet("{id}")]
@@ -53,6 +61,28 @@ namespace SubastaYa.Api.Controllers
         {
             var subastaId = await _crearSubastaHandler.Handle(command);
             return CreatedAtAction(nameof(ObtenerPorId), new { id = subastaId }, new { subastaId });
+        }
+
+        [HttpGet("{id}/pujas")]
+        public async Task<IActionResult> ObtenerHistorialPujas(int id)
+        {
+            var resultado =
+                await _historialPujasHandler.Handle(
+                    new HistorialPujasQuery(id));
+
+            return Ok(resultado);
+        }
+
+        [HttpGet("{id}/estado-puja")]
+        public async Task<IActionResult> ObtenerEstadoPuja(
+            int id,
+            [FromQuery] int compradorId)
+        {
+            var resultado =
+                await _estadoPujaHandler.Handle(
+                    new EstadoPujaQuery(id, compradorId));
+
+            return Ok(resultado);
         }        
     }
 }

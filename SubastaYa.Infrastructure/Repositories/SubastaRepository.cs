@@ -17,9 +17,10 @@ public class SubastaRepository : ISubastaRepository
     public async Task<Subasta?> ObtenerSubastaPorIdAsync(int id)
     {
         return await _dbContext.Subastas
-            .Include(s => s.Pujas)
-                .ThenInclude(p => p.Comprador)  // ← nuevo
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .Include(subasta => subasta.Categoria)
+            .Include(subasta => subasta.Pujas)
+                .ThenInclude(puja => puja.Comprador)  // ← nuevo
+            .FirstOrDefaultAsync(subasta => subasta.Id == id);
     }
 
     public void AgregarPuja(Puja puja)
@@ -30,46 +31,78 @@ public class SubastaRepository : ISubastaRepository
     public async Task<List<Subasta>> ObtenerActivasVencidasAsync(DateTime ahora)
     {
         return await _dbContext.Subastas
-            .Include(s => s.Pujas)
-            .Where(s => s.Estado == "ACTIVA" && s.FechaFin <= ahora)
+            .Include(subasta => subasta.Pujas)
+            .Where(subasta =>
+                subasta.Estado == "ACTIVA" &&
+                subasta.FechaFin <= ahora)
             .ToListAsync();
     }
 
     public async Task<List<Subasta>> ListarAsync(
-    string? estado, int? categoriaId, decimal? precioMin, decimal? precioMax, string? ordenarPor)
+    string? estado,
+    int? categoriaId,
+    decimal? precioMin,
+    decimal? precioMax,
+    string? ordenarPor)
+{
+    var consultaSubastas = _dbContext.Subastas
+        .Include(subasta => subasta.Categoria)
+        .Include(subasta => subasta.Pujas)
+            .ThenInclude(puja => puja.Comprador)
+        .AsQueryable();
+
+    if (!string.IsNullOrEmpty(estado))
     {
-        var query = _dbContext.Subastas
-            .Include(s => s.Pujas)
-                .ThenInclude(p => p.Comprador)  // ← nuevo
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(estado))
-            query = query.Where(s => s.Estado == estado);
-
-        if (categoriaId.HasValue)
-            query = query.Where(s => s.CategoriaId == categoriaId.Value);
-
-        if (precioMin.HasValue)
-            query = query.Where(s => s.PrecioBase >= precioMin.Value);
-
-        if (precioMax.HasValue)
-            query = query.Where(s => s.PrecioBase <= precioMax.Value);
-
-        // Los filtros (WHERE) sí viajan a SQL, sin problema -> se ejecutan en la base.
-        var subastas = await query.ToListAsync();
-
-        // El ORDENAMIENTO se hace ACÁ, en memoria, ya con la lista traída.
-        // Esto es plain C#, no SQL -> nunca puede fallar por traducción.
-        subastas = ordenarPor switch
-        {
-            "MenorTiempoRestante" => subastas.OrderBy(s => s.FechaFin).ToList(),
-            "MayorPuja" => subastas.OrderByDescending(s =>
-                s.Pujas.Any() ? s.Pujas.Max(p => p.Monto) : s.PrecioBase).ToList(),
-            _ => subastas.OrderBy(s => s.Id).ToList()
-        };
-
-        return subastas;
+        consultaSubastas = consultaSubastas
+            .Where(subasta => subasta.Estado == estado);
     }
+
+    if (categoriaId.HasValue)
+    {
+        consultaSubastas = consultaSubastas
+            .Where(subasta =>
+                subasta.CategoriaId == categoriaId.Value);
+    }
+
+    if (precioMin.HasValue)
+    {
+        consultaSubastas = consultaSubastas
+            .Where(subasta =>
+                subasta.PrecioBase >= precioMin.Value);
+    }
+
+    if (precioMax.HasValue)
+    {
+        consultaSubastas = consultaSubastas
+            .Where(subasta =>
+                subasta.PrecioBase <= precioMax.Value);
+    }
+
+    var subastas = await consultaSubastas.ToListAsync();
+
+    subastas = ordenarPor switch
+    {
+        "MenorTiempoRestante" =>
+            subastas
+                .OrderBy(subasta => subasta.FechaFin)
+                .ToList(),
+
+        "MayorPuja" =>
+            subastas
+                .OrderByDescending(subasta =>
+                    subasta.Pujas.Any()
+                        ? subasta.Pujas.Max(puja => puja.Monto)
+                        : subasta.PrecioBase)
+                .ToList(),
+
+        _ =>
+            subastas
+                .OrderBy(subasta => subasta.Id)
+                .ToList()
+    };
+
+    return subastas;
+}
 
     public void Agregar(Subasta subasta)
     {
@@ -78,16 +111,17 @@ public class SubastaRepository : ISubastaRepository
     public async Task<List<Subasta>> ObtenerSubastasConPujaDeUsuarioAsync(int usuarioId)
     {
         return await _dbContext.Subastas
-            .Include(s => s.Pujas)
-            .Where(s => s.Pujas.Any(p => p.CompradorId == usuarioId))
+            .Include(subasta => subasta.Pujas)
+            .Where(subasta =>
+                subasta.Pujas.Any(puja => puja.CompradorId == usuarioId))
             .ToListAsync();
     }
 
     public async Task<List<Subasta>> ObtenerPorVendedorIdAsync(int vendedorId)
     {
         return await _dbContext.Subastas
-            .Include(s => s.Pujas)
-            .Where(s => s.VendedorId == vendedorId)
+            .Include(subasta => subasta.Pujas)
+            .Where(subasta => subasta.VendedorId == vendedorId)
             .ToListAsync();
     }
 }
