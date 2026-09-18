@@ -132,5 +132,5 @@ Correr todos: Test Explorer → Run All Tests.
 
 ## Integrantes
 
-- [Nombre 1]
-- [Nombre 2]
+- Franco Avila
+- Matias Medina
