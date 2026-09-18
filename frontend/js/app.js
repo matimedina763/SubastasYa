@@ -26,6 +26,8 @@ async function cargarSubastasActivas() {
                         <p class="card-text">${subasta.descripcion}</p>
                         <p class="card-text">Precio inicial: $${subasta.precioInicial}</p>
                         <p class="oferta-actual">Oferta actual: $${subasta.ofertaActual}</p>
+                        <p class="card-text">${subasta.categoria ? `Categoría: ${subasta.categoria}` : ''}</p>
+                        <p class="card-text">${subasta.cantidadOfertas} oferta(s) realizada(s)</p>
                         <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
                         <p class="card-text temporizador" data-fecha-fin="${subasta.fechaFin}">--:--</p>
                         <button class="btn btn-primary w-100" onclick="abrirModalPuja(${subasta.id})">Pujar</button>
@@ -91,6 +93,8 @@ function abrirModalPuja(subastaId) {
     modal.show();
 
     consultarEstadoPuja(); // consulta con el usuario que esté seleccionado por defecto
+    cargarHistorialPujas(); // ← nuevo
+
 }
 
 document.getElementById("selectComprador").addEventListener("change", consultarEstadoPuja);
@@ -198,6 +202,27 @@ async function consultarEstadoPuja() {
         }
     } catch (error) {
         infoDiv.classList.add("d-none");
+    }
+}
+
+async function cargarHistorialPujas() {
+    const contenedor = document.getElementById("historialPujas");
+    try {
+        const res = await fetch(`${API_URL}/subastas/${subastaSeleccionadaId}/pujas`);
+        const pujas = await res.json();
+
+        if (pujas.length === 0) {
+            contenedor.innerHTML = "<p class='text-muted small'>Todavía no hay ofertas.</p>";
+            return;
+        }
+
+        contenedor.innerHTML = pujas.reverse().map(p => `
+            <div class="small border-bottom py-1">
+                <strong>${p.postor}</strong> ofertó $${p.monto} — ${new Date(p.fechaPuja).toLocaleTimeString()}
+            </div>
+        `).join("");
+    } catch (error) {
+        contenedor.innerHTML = "";
     }
 }
 
