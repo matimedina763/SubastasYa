@@ -33,7 +33,7 @@ public class HistorialPujasQueryHandler
             {
                 Id = puja.Id,
                 Monto = puja.Monto,
-                Postor = $"Postor {puja.CompradorId}",
+                Postor = puja.Comprador?.Nombre ?? $"Usuario {puja.CompradorId}",
                 FechaPuja = puja.FechaPuja
             })
             .ToList();
