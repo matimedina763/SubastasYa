@@ -20,11 +20,13 @@ async function cargarSubastasActivas() {
         lista.innerHTML = subastas.map(subasta => `
             <div class="col-md-4 mb-3">
                 <div class="card">
+                    ${subasta.urlImagen ? `<img src="${subasta.urlImagen}" class="card-img-top" style="height:180px; object-fit:cover;" alt="${subasta.titulo}">` : ''}
                     <div class="card-body">
                         <h5 class="card-title">${subasta.titulo}</h5>
                         <p class="card-text">${subasta.descripcion}</p>
                         <p class="card-text">Precio inicial: $${subasta.precioInicial}</p>
-                        <p class="oferta-actual">Oferta actual: $${subasta.ofertaActual}</p>                        <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
+                        <p class="oferta-actual">Oferta actual: $${subasta.ofertaActual}</p>
+                        <p class="card-text">${subasta.liderNombre ? `Líder: <strong>${subasta.liderNombre}</strong>` : "Sin ofertas todavía"}</p>
                         <p class="card-text temporizador" data-fecha-fin="${subasta.fechaFin}">--:--</p>
                         <button class="btn btn-primary w-100" onclick="abrirModalPuja(${subasta.id})">Pujar</button>
                     </div>
@@ -63,6 +65,7 @@ async function cargarSubastasCerradas() {
             return `
                 <div class="col-md-4 mb-3">
                     <div class="card card-cerrada">
+                        ${subasta.urlImagen ? `<img src="${subasta.urlImagen}" class="card-img-top" style="height:180px; object-fit:cover; opacity:0.7;" alt="${subasta.titulo}">` : ''}
                         <div class="card-body">
                             <h5 class="card-title text-muted">${subasta.titulo}</h5>
                             <p class="card-text">${subasta.descripcion}</p>

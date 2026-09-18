@@ -41,6 +41,7 @@ public static class SeedData
         {
             Titulo = "Notebook Lenovo",
             Descripcion = "Original, caja cerrada",
+            UrlImagen = "https://www.novogar.com.ar/Image/0/150_150-not.webp",
             PrecioBase = 30000,
             IncrementoMinimo = 1000,
             FechaInicio = DateTime.Now.AddDays(-1),
@@ -54,6 +55,7 @@ public static class SeedData
         {
             Titulo = "Figura de colección",
             Descripcion = "Edición limitada",
+            UrlImagen = "https://acdn-us.mitiendanube.com/stores/001/320/809/products/superman-1-820f7a0a40a4573a9b17270249361335-1024-1024.webp",
             PrecioBase = 15000,
             IncrementoMinimo = 500,
             FechaInicio = DateTime.Now.AddDays(-1),
@@ -67,6 +69,7 @@ public static class SeedData
         {
             Titulo = "Campera de cuero",
             Descripcion = "Talle M",
+            UrlImagen = "https://dorianargentina.com/wp-content/uploads/2022/08/Fotomodelo.jpg",
             PrecioBase = 20000,
             IncrementoMinimo = 1000,
             FechaInicio = DateTime.Now.AddHours(24), // inicio programado a +24hs
@@ -80,6 +83,7 @@ public static class SeedData
         {
             Titulo = "Bicicleta de montaña",
             Descripcion = "Rodado 29",
+            UrlImagen = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrD1xZ-GoZicviL-CFrEMcFfuCcDLI0YJiIveO3Q1-PkvS00wTfzLkbQPd&s=10",
             PrecioBase = 40000,
             IncrementoMinimo = 2000,
             FechaInicio = DateTime.Now.AddDays(-3),
@@ -93,6 +97,7 @@ public static class SeedData
         {
             Titulo = "Consola retro",
             Descripcion = "Sin pujas recibidas",
+            UrlImagen = "https://acdn-us.mitiendanube.com/stores/005/889/389/products/2-cdd9586e8b9278dabb17649539008002-1024-1024.webp",
             PrecioBase = 10000,
             IncrementoMinimo = 500,
             FechaInicio = DateTime.Now.AddDays(-3),
