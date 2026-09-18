@@ -61,15 +61,21 @@ async function cargarMisPublicaciones(vendedorId) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${publicaciones.map(p => `
-                        <tr>
-                            <td>${p.titulo}</td>
-                            <td>${p.estado}</td>
-                            <td>$${p.precioBase}</td>
-                            <td>${p.cantidadPujas}</td>
-                            <td>$${p.montoRecaudado}</td>
-                        </tr>
-                    `).join("")}
+                    ${publicaciones.map(p => {
+                        const claseBadge = p.estado === 'FINALIZADA' ? 'badge-finalizada'
+                            : p.estado === 'ACTIVA' ? 'badge-activa'
+                            : p.estado === 'PROGRAMADA' ? 'badge-programada'
+                            : 'badge-desierta';
+                        return `
+                            <tr>
+                                <td>${p.titulo}</td>
+                                <td><span class="badge-estado ${claseBadge}">${p.estado}</span></td>
+                                <td>$${p.precioBase}</td>
+                                <td>${p.cantidadPujas}</td>
+                                <td>$${p.montoRecaudado}</td>
+                            </tr>
+                        `;
+                    }).join("")}
                 </tbody>
             </table>
         `;

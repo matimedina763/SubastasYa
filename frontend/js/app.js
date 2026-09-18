@@ -82,12 +82,15 @@ async function cargarSubastasCerradas() {
 // Se abre cuando clickeás "Pujar" en cualquier card
 function abrirModalPuja(subastaId) {
     subastaSeleccionadaId = subastaId;
-    document.getElementById("alertaPuja").classList.add("d-none"); // ocultar error de un intento anterior
     document.getElementById("inputMonto").value = "";
 
     const modal = new bootstrap.Modal(document.getElementById("modalPujar"));
     modal.show();
+
+    consultarEstadoPuja(); // consulta con el usuario que esté seleccionado por defecto
 }
+
+document.getElementById("selectComprador").addEventListener("change", consultarEstadoPuja);
 
 // Se ejecuta al clickear "Confirmar puja" dentro del modal
 async function confirmarPuja() {
@@ -169,6 +172,30 @@ function formatearTiempo(diferenciaMs) {
     partes.push(`${segundos.toString().padStart(2, "0")}s`); // los segundos siempre se muestran
 
     return partes.join(" ");
+}
+
+async function consultarEstadoPuja() {
+    const compradorId = document.getElementById("selectComprador").value;
+    const infoDiv = document.getElementById("estadoPujaInfo");
+
+    try {
+        const res = await fetch(`${API_URL}/subastas/${subastaSeleccionadaId}/estado-puja?compradorId=${compradorId}`);
+        const estado = await res.json();
+
+        infoDiv.classList.remove("d-none");
+        if (estado.liderando) {
+            infoDiv.className = "alert alert-success mb-3";
+            infoDiv.textContent = `✅ Vas liderando con $${estado.ofertaActual}. Próxima oferta mínima: $${estado.proximaOferta}`;
+        } else if (estado.superado) {
+            infoDiv.className = "alert alert-warning mb-3";
+            infoDiv.textContent = `⚠️ Fuiste superado. Oferta actual: $${estado.ofertaActual}. Próxima oferta mínima: $${estado.proximaOferta}`;
+        } else {
+            infoDiv.className = "alert alert-info mb-3";
+            infoDiv.textContent = `Oferta actual: $${estado.ofertaActual}. Próxima oferta mínima: $${estado.proximaOferta}`;
+        }
+    } catch (error) {
+        infoDiv.classList.add("d-none");
+    }
 }
 
 document.getElementById("btnConfirmarPuja").addEventListener("click", confirmarPuja);
